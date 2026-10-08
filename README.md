@@ -2,7 +2,7 @@
 
 Byeori keeps product planning in reviewable files beside a project. An AI assistant can help draft and search the plans; a person reviews a frozen snapshot in the local Studio before planning is applied. Any implementation work still needs its own explicit path scope and authorization.
 
-**Status:** Byeori targets explicit prereleases rather than stable releases. Check [GitHub Releases](https://github.com/Ksanbal/byeori/releases) for available versions and assets, and [GitHub Actions](https://github.com/Ksanbal/byeori/actions/workflows/ci.yml) for CI results. Claude model checks require sign-in; Codex hook enforcement requires host trust review. See [Verification](docs/verification.md) for current evidence.
+**Status:** The current release is prerelease `0.1.0-rc.1`, not stable. See [GitHub Releases](https://github.com/Ksanbal/byeori/releases) for assets and [GitHub Actions](https://github.com/Ksanbal/byeori/actions/workflows/ci.yml) for CI. Claude authenticated model use remains unverified; Codex hook trust is unanswered, so active enforcement is not established. See [Verification](docs/verification.md) for the evidence and remaining limits.
 
 ## What it does
 
@@ -16,7 +16,7 @@ See [the product model](docs/product-model.md), [architecture](docs/architecture
 
 ## Four-step workflow
 
-1. **Install the host plugin from a published release.** Commands and current verification limits are in [Installation](docs/installation.md).
+1. **Install the host plugin.** Follow the verified release commands in [Installation](docs/installation.md).
 2. **Initialize a selected project.** From an extracted release or installed plugin, resolve its `runtime/cli.mjs` and run:
 
    ```sh
@@ -29,7 +29,7 @@ See [the product model](docs/product-model.md), [architecture](docs/architecture
 
    These commands require Node `>=24.13.0 <25`. The first writes the managed planning setup; review its result before continuing. `doctor` reports runtime and host observations, and `status` reports the bound project state.
 
-3. **Draft and prepare.** Ask the installed assistant skill to start or change the plan. It uses versioned drafts, then validates and freezes a review round. You can inspect the supported command contract with `node "/path/to/byeori-plugin/runtime/cli.mjs" --help`.
+3. **Draft and prepare.** Use the installed `start` or `change` skill to create a versioned draft, then validate and freeze a review round. See [Installation](docs/installation.md) for each host's skill names. You can inspect the supported command contract with `node "/path/to/byeori-plugin/runtime/cli.mjs" --help`.
 4. **Review, submit and apply.** Start Studio with `studio --action start`, inspect all decisions, comments, deletions and any implementation allowlist, then explicitly submit in Studio. Afterward, ask the assistant to read the durable results. Approval of planning and permission to edit code are separate; the latter is bounded by the reviewed file or directory paths.
 
 ## Runtime and development

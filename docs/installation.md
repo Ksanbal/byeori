@@ -1,6 +1,6 @@
 # Installation, update and removal
 
-**Release status:** Use the published `v0.1.0-rc.1` prerelease when available. Check [GitHub Releases](https://github.com/Ksanbal/byeori/releases) for the current tag and assets. Command-specific verification and native-host limits are in [Verification](verification.md).
+**Release status:** The current release is the explicit prerelease `v0.1.0-rc.1`. Download the plugin ZIP or consumer tarball from [GitHub Releases](https://github.com/Ksanbal/byeori/releases); verify current asset digests and host limits in [Verification](verification.md).
 
 Read [Verification](verification.md) for the latest Claude and Codex host-test evidence. A local install or hook discovery alone does not establish active enforcement.
 
@@ -28,7 +28,9 @@ Check the result before continuing. The runtime reports Node, SQLite/FTS5, schem
 
 ## Host installation
 
-The root catalog is named `byeori-plugins`; its plugin entry is `byeori`. Use the published `v0.1.0-rc.1` tag when available. These are the documented host commands; command-specific verification is in [Verification](verification.md).
+The root catalog is named `byeori-plugins`; its plugin entry is `byeori`. Use these marketplace commands to install the published `v0.1.0-rc.1` release. Public marketplace installation was verified; native host behavior and limits are in [Verification](verification.md).
+
+Before updating or removing a plugin, close the owning host session and use an independent terminal. Start a fresh host session after the change. An observed Codex uninstall from an active protected chat left hook dispatch pointing at the removed runtime and blocked tools until the plugin was restored. Do not bypass the trust prompt or disable security controls.
 
 ### Claude Code
 
@@ -58,7 +60,7 @@ Use the scope where you actually installed it (`user`, `project` or `local`). Re
 
 ### Codex CLI
 
-The command names below were observed in local `codex-cli 0.161.0 --help`. The CLI reported plugin commands `add`, `list`, `remove`, and marketplace commands `add`, `list`, `upgrade`, `remove` (not `install`/`uninstall`). See [Verification](verification.md) for current native-host results and limitations:
+The command names below were observed in `codex-cli 0.161.0 --help`. It supports plugin commands `add`, `list`, `remove`, and marketplace commands `add`, `list`, `upgrade`, `remove` (not `install`/`uninstall`). The public marketplace install is verified; see [Verification](verification.md) for remaining native-host limits:
 
 ```sh
 codex plugin marketplace add Ksanbal/byeori --ref v0.1.0-rc.1 --json
@@ -66,20 +68,29 @@ codex plugin add byeori@byeori-plugins --json
 codex plugin list
 ```
 
-To refresh the Git marketplace and uninstall the plugin:
+To refresh the Git marketplace:
 
 ```sh
 codex plugin marketplace upgrade byeori-plugins
+```
+
+To uninstall the plugin and then remove its marketplace:
+
+```sh
 codex plugin remove byeori@byeori-plugins
 codex plugin marketplace remove byeori-plugins
 ```
 
 These commands change user plugin configuration/cache when executed. Review the host's confirmation and current documentation. Do not treat hook discovery alone as proof that enforcement is active.
 
+### Skills
+
+The installed Claude Code skill entrypoints are `/byeori:init`, `/byeori:start`, `/byeori:change` and `/byeori:review`. In Codex, use `$byeori-init`, `$byeori-start`, `$byeori-change` and `$byeori-review`.
+
 ## Project guidance versus plugin removal
 
 The CLI command `host remove` removes only Byeori-managed project instruction spans and host observations. It leaves planning, workflow, review and source records in place; it does not uninstall host plugins. Use the host's plugin-removal flow separately. Back up project records according to your project's normal policy before any manual cleanup. There is no general Byeori command that deletes the complete project planning history.
 
-## Release source and install status
+## Release source
 
-Public source and releases: <https://github.com/Ksanbal/byeori>. Use the `v0.1.0-rc.1` release when available. See [Verification](verification.md) for dated evidence about source, CI, assets and remote host installation.
+Public source and releases: <https://github.com/Ksanbal/byeori>. See [Verification](verification.md) for the published tag, asset hashes, CI evidence and host limits.
