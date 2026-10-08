@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
@@ -46,13 +47,13 @@ test('four shared templates render both host names with resolvable relative refe
     const documents = validateSource(await guideDocuments()); assert.equal(documents.length, 9); assert.deepEqual(new Set(documents.map(document => document.kind)), new Set(DOCUMENT_KINDS));
     const invalid = (await guideDocuments()).map(document => document.path.endsWith('/scenario.yaml') ? { ...document, raw: document.raw.replaceAll('ACT-WORKER-001', 'ACT-NOT-FOUND') } : document); assert.throws(() => validateSource(invalid));
     const reference = await recipes(); const root = path.join(directory, 'empty nonNode 한글'); await mkdir(root); const help = await child<{ commands: { command: string; flags: string }[] }>(root, { command: ['help'] });
-    assert.equal(reference.size, 18); for (const recipe of reference.values()) assert.ok(help!.commands.some(command => command.command === recipe.command.join(' ')), recipe.command.join(' ')); assert.deepEqual(await readdir(root), []);
+    assert.equal(reference.size, 18); assert.deepEqual(reference.get('gate')!.args, ['--hook-ticket', '$hook_ticket']); assert.ok(help!.commands.find(command => command.command === 'gate check')!.flags.includes('--hook-ticket')); for (const recipe of reference.values()) assert.ok(help!.commands.some(command => command.command === recipe.command.join(' ')), recipe.command.join(' ')); assert.deepEqual(await readdir(root), []);
     console.log(JSON.stringify({ rendered_skills: 8, host_installation_claim: false, schema_validated_guides: documents.map(document => document.kind), documented_recipes: reference.size }));
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
 test('documented CLI recipes persist interview state and resume feedback once across real process boundaries', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'byeori skills nonNode 한글 ')); const assets = await mkdtemp(path.join(os.tmpdir(), 'byeori skills assets ')); const reference = await recipes(); const variables: Record<string, unknown> = {}; const executed: string[] = []; let studioRunning = false;
-  const invoke = async <T>(name: string, expected = 0): Promise<T | null> => { const recipe = substitute(reference.get(name), variables) as Recipe; assert.ok(recipe); executed.push(name); return child<T>(root, recipe, expected); };
+  const invoke = async <T>(name: string, expected = 0): Promise<T | null> => { if (name === 'gate') variables.hook_ticket = randomUUID(); const recipe = substitute(reference.get(name), variables) as Recipe; assert.ok(recipe); executed.push(name); return child<T>(root, recipe, expected); };
   const state = async () => (await invoke<ContinuityStatus>('status'))!;
   const checkpointWorkflow = async (workflow: ContinuityStatus['workflow']) => { const current = await state(); variables.workflow_version = current.workflow.version; variables.workflow = workflow; await invoke('workflow-write'); };
   const currentChange = async () => { const entries = (await invoke<{ entries: { type: string; record: ChangeRecord }[] }>('change-state'))!.entries; return entries.find(entry => entry.type === 'change')!.record; };
@@ -87,7 +88,7 @@ test('documented CLI recipes persist interview state and resume feedback once ac
     await invoke('apply'); const applied = await state(); assert.equal(applied.apply_state.state, 'applied'); assert.equal(applied.implementation_authorization.state, 'none'); variables.query = '기획'; const hits = (await invoke<{ hits: { id: string }[] }>('search-approved'))!.hits; assert.ok(hits.some(hit => hit.id === 'PRD-DEMO-001')); variables.object_id = 'PRD-DEMO-001'; await invoke('get-approved'); variables.object_id = 'FEAT-MSG-001'; await invoke('impact-approved'); variables.query = 'unknown-cancellation-feature'; assert.deepEqual((await invoke<{ hits: unknown[] }>('search-approved'))!.hits, []);
     Object.assign(variables, { host: 'codex', tool: 'file-write', operation: 'implementation_write', paths: ['README.md'] }); await invoke('gate', 6); variables.operation = 'read'; await invoke('gate'); await invoke('recover-inspect');
     const history = (await invoke<{ entries: { type: string; record: ReviewRound }[] }>('change-state'))!.entries; assert.equal(history.filter(item => item.type === 'review').length, 2); assert.equal(history.find(item => item.type === 'review' && item.record.manifest.round === 1)!.record.manifest_hash, first.manifest_hash);
-    assert.equal(await readFile(path.join(root, 'AGENTS.md'), 'utf8'), 'Preserve synthetic user instructions'); assert.ok(!executed.includes('approve') && !executed.includes('sql'));
+    assert.ok((await readFile(path.join(root, 'AGENTS.md'), 'utf8')).startsWith('Preserve synthetic user instructions')); assert.ok(!executed.includes('approve') && !executed.includes('sql'));
     console.log(JSON.stringify({ process_boundary_simulation: true, native_compact_or_host_claim: false, llm_query_expansion_claim: false, executed_recipes: [...new Set(executed)], guide_documents: documents.length, response_count: 1, human_submissions: 'synthetic service only', frozen_rounds: 2 }));
   } finally { if (studioRunning) await stopOwnedStudio(root); await rm(root, { recursive: true, force: true }); await rm(assets, { recursive: true, force: true }); }
 });

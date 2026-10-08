@@ -10,6 +10,9 @@ import { createReviewCore, result } from '../core/services';
 import { impact, rebuildIndex, search } from '../core/search';
 import { parseYaml, PROFILE } from '../core/yaml';
 import { studio } from './studio';
+import { hookTicket } from '../adapters/ticket';
+import { manageInstructions, preflightInstructions } from '../adapters/managed';
+import { consumeGateReceipt, disableManagedHostObservations, refreshHosts } from '../adapters/probe';
 
 const complex = {
   'change create': ['createChange', ['project_id', 'workspace_fingerprint', 'metadata'], ['display_name']],
@@ -28,7 +31,7 @@ const complex = {
 } as const;
 const simpleHelp = {
   help: '--help is an alias; no initialized workspace required',
-  init: '[--name <name>]', doctor: '', status: '',
+  init: '[--name <name>]', doctor: '', status: '', 'host remove': 'Remove only managed instructions/observations; uninstall plugin hooks through the host',
   search: '--query <text> [--scope <scope>] [--limit <1..25>] [--kinds <comma-separated-kinds>]',
   get: '--id <id> [--scope <scope>] OR --input <JSON GetRequest: object_id, optional scope/revision>',
   impact: '--id <id> [--scope <scope>] [--depth <1..5>] [--limit <1..100>]',
@@ -42,7 +45,7 @@ function help() {
     executable: 'byeori', global_flags: ['--root <workspace>', '--json'],
     commands: [
       ...Object.entries(simpleHelp).map(([command, flags]) => ({ command, flags })),
-      ...Object.entries(complex).map(([command, [, required, optional]]) => ({ command, flags: '--input <JSON object>', required_fields: required, optional_fields: optional })),
+      ...Object.entries(complex).map(([command, [, required, optional]]) => ({ command, flags: command === 'gate check' ? '--input <JSON object> [--hook-ticket <fresh UUID>]' : '--input <JSON object>', required_fields: required, optional_fields: optional })),
     ],
     scopes: ['approved', 'change:<id>', 'history', 'history:<id>', 'history:<id>:<round>'],
     document_kinds: DOCUMENT_KINDS,
@@ -87,11 +90,13 @@ export async function execute(argv: string[]): Promise<Result<unknown>> {
     const core: CoreApi = { ...createReviewCore(root), doctor: () => result(() => doctor(root)), lint: input => result(() => lint(root, input)), search: input => result(() => search(root, input)), impact: input => result(() => impact(root, input)), rebuildIndex: input => result(() => rebuildIndex(root, input.scope)), studio: input => studio(root, input.action) };
     let response: Result<unknown>;
     if (Object.hasOwn(complex, command)) {
-      allow('--input'); const [method, required, optional] = complex[command as keyof typeof complex]; const input = jsonInput(requireFlag('--input'), required, optional);
+      allow('--input', ...(command === 'gate check' ? ['--hook-ticket'] : [])); const [method, required, optional] = complex[command as keyof typeof complex]; const input = jsonInput(requireFlag('--input'), required, optional);
+      if (command === 'gate check') { const ticket = flags.get('--hook-ticket'); if (ticket !== undefined) hookTicket(ticket); if (!ticket || !await consumeGateReceipt(root, input as unknown as Parameters<CoreApi['gateCheck']>[0], ticket, argv)) await refreshHosts(root); }
       response = await (core[method] as unknown as (value: Record<string, unknown>) => Promise<Result<unknown>>)(input);
     } else switch (command) {
-      case 'init': allow('--name'); response = await core.init({ root, name: flags.get('--name') }); break;
-      case 'doctor': allow(); response = await core.doctor(); break;
+      case 'init': allow('--name'); await preflightInstructions(root); response = await core.init({ root, name: flags.get('--name') }); if (response.ok) await manageInstructions(root, 'install'); break;
+      case 'doctor': { allow(); const report = await core.doctor(); if (report.ok && report.data.writable && report.data.schemas.compatible && report.data.status) report.data.hosts = await refreshHosts(root); response = report; break; }
+      case 'host remove': allow(); response = await result(async () => { const removed = await manageInstructions(root, 'remove'); await disableManagedHostObservations(root); return removed; }); break;
       case 'status': allow(); response = await core.status(); break;
       case 'search': { allow('--query', '--scope', '--limit', '--kinds'); const kinds = flags.get('--kinds')?.split(','); if (kinds?.some(kind => !DOCUMENT_KINDS.includes(kind as typeof DOCUMENT_KINDS[number]))) reject('VALIDATION_FAILED', 'Unknown search kind.'); response = await core.search({ query: requireFlag('--query'), scope: scope(flags.get('--scope')), limit: number(flags.get('--limit')), kinds: kinds as typeof DOCUMENT_KINDS[number][] | undefined }); break; }
       case 'get': allow('--id', '--scope', '--input'); response = flags.has('--input') ? (allow('--input'), await core.get(jsonInput(requireFlag('--input'), ['object_id'], ['scope', 'revision']) as unknown as Parameters<CoreApi['get']>[0])) : await core.get({ object_id: requireFlag('--id'), scope: scope(flags.get('--scope')) }); break;

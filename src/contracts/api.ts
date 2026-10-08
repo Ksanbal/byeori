@@ -141,6 +141,6 @@ export interface HumanReviewApi {
 export const CLI_COMMANDS = [
   'init', 'doctor', 'status', 'search', 'get', 'impact', 'history', 'change create', 'change put',
   'change cancel', 'change update', 'change delete', 'change move', 'workflow write', 'review prepare', 'review results', 'review respond', 'lint', 'apply', 'recover',
-  'gate check', 'index rebuild', 'studio',
+  'gate check', 'index rebuild', 'studio', 'host remove',
 ] as const;
 export type CliCommand = typeof CLI_COMMANDS[number];
