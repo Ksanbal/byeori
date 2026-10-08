@@ -1,0 +1,23 @@
+schema_version: 1
+id: PRD-DEMO-001
+kind: prd
+title: 합성 상담 서비스
+summary: fixture 전용 상담 메시지 흐름이다. 실제 복지 대상자 데이터가 아니다.
+aliases:
+- 제품 개요
+- 목표
+- 기획
+relations: []
+open_questions: []
+purpose: 직원과 이용자 간 상담 요청을 놓치지 않는다.
+goals:
+- id: GOAL-001
+  text: 메시지 요청에서 답변까지의 흐름을 명확히 정의한다.
+in_scope:
+- 텍스트 메시지
+- 권한 구분
+out_of_scope:
+- 실제 개인정보 저장
+- 결제
+constraints:
+- 합성 데이터만 사용

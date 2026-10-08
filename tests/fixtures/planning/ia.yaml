@@ -1,0 +1,18 @@
+schema_version: 1
+id: IA-DEMO-001
+kind: ia
+title: 상담 메뉴 구조
+summary: 상담 화면으로 이동하는 메뉴 계층이다.
+aliases:
+- 메뉴 구조
+- 사이트맵
+- 화면 목록
+relations:
+- type: related_to
+  target: SCR-MSG-001
+open_questions: []
+nodes:
+- id: NAV-CHAT
+  label: 상담
+  screen_id: SCR-MSG-001
+  parent_id: null

@@ -1,0 +1,26 @@
+schema_version: 1
+id: ENT-MSG-001
+kind: entity
+title: Message 데이터
+summary: 메시지 식별자와 본문을 저장하는 합성 데이터 모델이다.
+aliases:
+- 메시지 테이블
+- DB 필드
+- ERD
+relations:
+- type: stores
+  target: FEAT-MSG-001
+open_questions: []
+fields:
+- id: FLD-ID
+  name: id
+  type: string
+  nullable: false
+- id: FLD-BODY
+  name: body
+  type: string
+  nullable: false
+primary_key:
+- id
+constraints:
+- body는 비어 있지 않음

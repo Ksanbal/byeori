@@ -1,0 +1,28 @@
+schema_version: 1
+id: ARCH-DEMO-001
+kind: architecture
+title: 상담 시스템 구조
+summary: 브라우저와 로컬 API를 분리한 합성 시스템 구조다.
+aliases:
+- 시스템 구조
+- 서버 구성
+- 아키텍처
+relations:
+- type: related_to
+  target: FEAT-MSG-001
+open_questions: []
+components:
+- id: COMP-WEB
+  title: Web
+  responsibility: 메시지 UI
+- id: COMP-API
+  title: API
+  responsibility: 메시지 저장
+connections:
+- id: CONN-WEB-API
+  from: COMP-WEB
+  to: COMP-API
+  protocol: HTTP
+decisions:
+- id: DEC-001
+  text: 합성 fixture의 기능 경계만 표현한다.

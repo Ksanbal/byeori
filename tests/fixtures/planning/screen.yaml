@@ -1,0 +1,28 @@
+schema_version: 1
+id: SCR-MSG-001
+kind: screen
+title: 상담 채팅 화면
+summary: 메시지 목록과 작성 입력창을 제공한다.
+aliases:
+- 채팅 화면
+- 메시지 입력창
+- 대화 화면
+relations:
+- type: renders
+  target: FEAT-MSG-001
+open_questions: []
+components:
+- id: COMP-LIST
+  type: message-list
+  label: 대화 목록
+  actions: []
+- id: COMP-INPUT
+  type: text-input
+  label: 메시지 작성
+  actions:
+  - send
+states:
+- id: STATE-EMPTY
+  description: 아직 메시지가 없음
+- id: STATE-READY
+  description: 메시지를 작성할 수 있음
