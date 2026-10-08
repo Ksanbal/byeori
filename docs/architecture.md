@@ -1,6 +1,8 @@
-# Byeori v0.1 contract
+# Byeori v0.1 architecture contract
 
-This is the B01 implementation contract, not a claim that Core, Studio or hooks are implemented. `src/contracts/index.ts` is the common TypeScript surface for Core, CLI, HTTP Studio and host adapters. Core owns parsing, validation, lifecycle derivation, all managed writes and gate decisions. Neither an adapter nor a UI may reconstruct approval independently. One local user and one active change per configured workspace are supported.
+> This document preserves the original implementation contract and detailed invariants. Some task-stage wording is historical; it is not a claim that each requirement was independently reverified in the packaged release. For the current system summary, see [Architecture overview](architecture-overview.md); for commands, executed checks and pending support, see [Verification](verification.md).
+
+This preserves the B01 implementation contract; its statement that Core, Studio and hooks were not yet implemented described that earlier stage. The current implementation and its verified limits are summarized in [Architecture overview](architecture-overview.md) and [Verification](verification.md). `src/contracts/index.ts` is the common TypeScript surface for Core, CLI, HTTP Studio and host adapters. Core owns parsing, validation, lifecycle derivation, all managed writes and gate decisions. Neither an adapter nor a UI may reconstruct approval independently. One local user and one active change per configured workspace are supported.
 
 ## Durable files and cache
 
