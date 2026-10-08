@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {mkdir, readFile} from 'node:fs/promises';
 import path from 'node:path';
 import test from 'node:test';
-import {chromium, expect} from '@playwright/test';
+import {chromium, expect, type Browser} from '@playwright/test';
 import {studioFixture} from './setup';
 import {parseYaml, rawHash} from '../../src/core/yaml';
 import type {JsonValue} from '../../src/contracts';
@@ -14,9 +14,11 @@ function leaves(value: JsonValue): string[] {
  return typeof value === 'string' ? [value] : [];
 }
 test('real Chrome9 views, frozen history, responsive keyboard navigation and escaped OpenAPI content', {timeout:120000}, async () => {
- const fixture=await studioFixture(); const browser=await chromium.launch({channel:'chrome',headless:true});
- const screenshots=path.resolve('artifacts/test-screenshots/readviews');await mkdir(screenshots,{recursive:true});
- try {
+ const fixture=await studioFixture(); let browser: Browser | undefined;
+ const screenshots=path.resolve('artifacts/test-screenshots/readviews');
+  try {
+    browser = await chromium.launch({channel:'chrome',headless:true});
+  await mkdir(screenshots,{recursive:true});
   const context=await browser.newContext({viewport:{width:1440,height:900}});const page=await context.newPage();const errors:string[]=[];const remote:string[]=[];
   page.on('pageerror',error=>errors.push(error.message)); page.on('console',message=>{if(message.type()==='error')errors.push(message.text());});
   page.on('request',request=>{if(!request.url().startsWith(fixture.url)&&!request.url().startsWith('data:'))remote.push(request.url());});
@@ -49,11 +51,12 @@ test('real Chrome9 views, frozen history, responsive keyboard navigation and esc
   await expect(page.getByRole('button',{name:'확대',exact:true})).toBeVisible();await page.getByRole('button',{name:'확대',exact:true}).click();await expect(page.getByText('125%',{exact:true})).toBeVisible();await page.getByRole('button',{name:'초기화',exact:true}).click();await expect(page.getByText('100%',{exact:true})).toBeVisible();
   assert.deepEqual(errors,[]);console.log('Chrome',browser.version(),'viewports1440x900,1024x768,390x844;9 documents all source strings retained; no console/page errors/remote refs.');
   await context.close();
- } finally {await browser.close();await fixture.cleanup();}
+ } finally {try {await browser?.close();} finally {await fixture.cleanup();}}
 });
 test('invalid real draft is preserved and displays a truthful retryable error, while frozen content stays readable', {timeout:30000}, async () => {
- const fixture=await studioFixture();const browser=await chromium.launch({channel:'chrome',headless:true});
- try {
+ const fixture=await studioFixture();let browser: Browser | undefined;
+  try {
+    browser = await chromium.launch({channel:'chrome',headless:true});
   const context=await browser.newContext();const page=await context.newPage();await page.goto(fixture.url);
   await page.getByRole('tab',{name:'리뷰',exact:true}).click();await expect(page.getByRole('button',{name:'리뷰 제출',exact:true})).toBeEnabled();await page.getByRole('navigation',{name:'문서 목록'}).getByRole('button',{name:/SCN-MSG-001/}).click();await expect(page.locator('article:visible')).toContainText('STEP-SEND');
   const {putDraft}=await import('../../src/core/workspace');const broken='broken: true\n';
@@ -65,5 +68,5 @@ test('invalid real draft is preserved and displays a truthful retryable error, w
   await page.getByRole('tab',{name:'리뷰',exact:true}).click();await page.getByRole('navigation',{name:'문서 목록'}).getByRole('button',{name:/SCN-MSG-001/}).click();await expect(page.locator('article:visible')).toContainText('STEP-SEND');
   assert.equal(await readFile(path.join(fixture.root,'planning/changes',fixture.change.change_id,'draft',rawHash(broken)+'.yaml'),'utf8'),broken);
   await context.close();
- }finally{await browser.close();await fixture.cleanup();}
+ }finally{try {await browser?.close();} finally {await fixture.cleanup();}}
 });

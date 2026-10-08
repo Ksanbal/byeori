@@ -7,10 +7,12 @@ import { initializeWorkspace, currentBinding, createChange, putDraft } from '../
 import { prepareReview } from '../../src/core/review';
 import { parseDocument } from '../../src/core/documents';
 import { parseYaml } from '../../src/core/yaml';
-import { startStudio } from '../../src/server';
+import { startStudio, type StudioServerHandle } from '../../src/server';
 
 export async function studioFixture() {
   const root = await mkdtemp(path.join(os.tmpdir(), 'byeori-ui-'));
+  let server: StudioServerHandle | undefined;
+  try {
   await initializeWorkspace(root, '합성 상담 프로젝트');
   const binding = await currentBinding(root);
   let change = await createChange(root, { ...binding, metadata: {type: 'spec_change', title: '상담 기획 검토', request: '9종 합성 문서를 검토해 주세요.', reason: '브라우저 읽기 검증', affected_object_ids: [], implementation_scope: {allowlist: [], related_object_ids: [], validation_plan: []}}});
@@ -26,7 +28,11 @@ export async function studioFixture() {
     change = (await putDraft(root, { ...binding, change_id: change.change_id, expected_version: change.version, object_id: document.id, kind: document.kind, path: document.path, raw})).change;
   }
   const round = await prepareReview(root, {...binding, change_id: change.change_id, expected_version: change.version});
-  const server = await startStudio(root, {assetsRoot: path.resolve('dist/studio')});
+  server = await startStudio(root, {assetsRoot: path.resolve('dist/studio')});
   if (!server.runtime.url) throw new Error('Studio did not start');
-  return {root, binding, change, url: server.runtime.url, round, cleanup: async () => {await server.close(); await rm(root, {recursive: true, force: true});}};
+  return {root, binding, change, url: server.runtime.url, round, cleanup: async () => {try {await server!.close();} finally {await rm(root, {recursive: true, force: true});}}};
+  } catch (error) {
+    try {await server?.close();} finally {await rm(root, {recursive: true, force: true});}
+    throw error;
+  }
 }

@@ -8,12 +8,14 @@ import { parseYaml } from '../../src/core/yaml';
 import { createChange, currentBinding, deleteDraft, initializeWorkspace, putDraft } from '../../src/core/workspace';
 import { prepareReview, roundBinding } from '../../src/core/review';
 import { apply } from '../../src/core/apply';
-import { startStudio } from '../../src/server';
+import { startStudio, type StudioServerHandle } from '../../src/server';
 import { browserSession } from '../server/helpers';
 
 /** Genuine synthetic baseline through authenticated save/submit/apply; next round has four review items. */
 export async function reviewFixture() {
   const root = await mkdtemp(path.join(os.tmpdir(), 'byeori-review-ui-'));
+  let server: StudioServerHandle | undefined;
+  try {
   const read = (kind: string) => parseYaml(readFileSync(new URL('../fixtures/planning/' + kind + '.yaml', import.meta.url), 'utf8'));
   const prd = read('prd') as unknown as Prd; const actor = read('actor') as unknown as Actor; const architecture = read('architecture') as unknown as Architecture;
   architecture.relations = [];
@@ -21,7 +23,7 @@ export async function reviewFixture() {
   let baseline = await createChange(root, {...binding, metadata: {type: 'spec_change', title: '합성 기준 문서', request: '합성 회귀 검증의 기준 문서를 만든다.', reason: '실제 승인 체인 준비', affected_object_ids: [], implementation_scope: {allowlist: [], related_object_ids: [], validation_plan: []}}});
   for (const [name, content] of [['prd', prd], ['actor', actor], ['architecture', architecture]] as const) baseline = (await putDraft(root, {...binding, change_id: baseline.change_id, expected_version: baseline.version, object_id: content.id, kind: content.kind, path: 'planning/source/' + name + '.yaml', raw: stringify(content)})).change;
   const baselineRound = await prepareReview(root, {...binding, change_id: baseline.change_id, expected_version: baseline.version});
-  const server = await startStudio(root, {assetsRoot: path.resolve('dist/studio')});
+  server = await startStudio(root, {assetsRoot: path.resolve('dist/studio')});
   const session = await browserSession(server.runtime.url!);
   const baselineFeedback = {...roundBinding(baselineRound), items: baselineRound.manifest.items.map(item => ({item_id: item.item_id, decision: 'approve' as const, comments: []})), implementation_authorization: {allowed: false as const, scope_hash: null}};
   const saved = (await session.post('/api/review/draft', {...baselineFeedback, expected_version: null})).result<{version: string}>();
@@ -35,5 +37,9 @@ export async function reviewFixture() {
   for (const [name, content] of [['prd', prd], ['actor', actor]] as const) change = (await putDraft(root, {...binding, change_id: change.change_id, expected_version: change.version, object_id: content.id, kind: content.kind, path: 'planning/source/' + name + '.yaml', raw: stringify(content)})).change;
   change = await deleteDraft(root, {...binding, change_id: change.change_id, expected_version: change.version, object_id: architecture.id});
   const round = await prepareReview(root, {...binding, change_id: change.change_id, expected_version: change.version});
-  return {root, binding, change, round, url: server.runtime.url!, cleanup: async () => {await server.close(); await rm(root, {recursive: true, force: true});}};
+  return {root, binding, change, round, url: server.runtime.url!, cleanup: async () => {try {await server!.close();} finally {await rm(root, {recursive: true, force: true});}}};
+  } catch (error) {
+    try {await server?.close();} finally {await rm(root, {recursive: true, force: true});}
+    throw error;
+  }
 }

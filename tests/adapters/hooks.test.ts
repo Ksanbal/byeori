@@ -87,7 +87,7 @@ test('planning draft paths only, patch moves/deletes/absolute paths, path escape
 test('generated configurations fail closed on missing runtime; managed CLI is classified without guessed plugin env', async () => {
   for (const host of ['claude', 'codex'] as const) {
     const config = hooksConfig(host); assert.equal(config.hooks.PreToolUse[0].matcher, '.*'); assert.ok(!JSON.stringify(config).includes('/Users/')); assert.ok(JSON.stringify(config).includes('runtime/hook.mjs'));
-    const run = async (event: 'PreToolUse' | 'SessionStart') => new Promise<number | null>((resolve, reject) => { const child = spawn('/bin/sh', ['-c', config.hooks[event][0].hooks[0].command], { env: { PATH: '/definitely-missing-node', PLUGIN_ROOT: '/absent', CLAUDE_PLUGIN_ROOT: '/absent' } }); child.on('error', reject); child.on('close', resolve); child.stdin.end('{}'); });
+    const run = async (event: 'PreToolUse' | 'SessionStart') => new Promise<number | null>((resolve, reject) => { const child = spawn('/bin/sh', ['-c', config.hooks[event][0].hooks[0].command], { env: { PATH: '/definitely-missing-node', PLUGIN_ROOT: '/absent', CLAUDE_PLUGIN_ROOT: '/absent' }, stdio: 'ignore' }); child.on('error', reject); child.on('close', resolve); });
     assert.equal(await run('PreToolUse'), 2); assert.equal(await run('SessionStart'), 0);
   }
   const root = '/tmp/fixture'; const event = parseHookInput(input(root, 'Bash', { command: `node "${installedCliPath()}" status --root "${root}" --json` })); assert.equal(normalizeTool(root, 'codex', event).operation, 'read');
