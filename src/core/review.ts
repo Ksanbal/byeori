@@ -17,8 +17,15 @@ async function reviewLock<T>(root: string, operation: string, action: (writer: W
     try { return await withWriteLock(root, operation, action, hooks); }
     catch (error) {
       if (!(error instanceof CoreError) || error.diagnostics[0].code !== 'APPLY_RECOVERY_REQUIRED' || attempt >= 50) throw error;
-      const owner = await readOwnership(root);
-      if (!owner || !['human review submit', 'review autosave'].includes(owner.operation) || await probeOwnership(owner) !== 'alive') throw error;
+      let owner;
+      try { owner = await readOwnership(root); }
+      catch (ownershipError) {
+        if (!(ownershipError instanceof CoreError) || ownershipError.diagnostics[0].code !== 'APPLY_RECOVERY_REQUIRED') throw ownershipError;
+        // Publication may be incomplete. Wait only; never remove or reclaim its anchor.
+        await hooks.afterBoundary?.('review:ownership-pending'); await delay(20); continue;
+      }
+      // The observed contender may have completed/released before the read.
+      if (owner && (!['human review submit', 'review autosave'].includes(owner.operation) || await probeOwnership(owner) !== 'alive')) throw error;
       await delay(20);
     }
   }
@@ -287,7 +294,14 @@ export async function reviewResults(root: string, input: ReviewBinding): Promise
   return withWriteLock(root, 'review results', async () => {
     const round = await readRound(root, input.change_id, input.round); if (!same(roundBinding(round), input)) reject('STALE_REVIEW', 'Review binding mismatch.');
     const receipt = await acceptedReceipt(root, round); const processed = await responses(root, round); const result = approval(round, receipt, await roundDocuments(root, round, 'after'));
-    try { if (await optionalText(root, changeRoot(input.change_id) + '/applied.yaml') === null) await freshRound(root, input); else { const head = await sourceHead(root); if (head.change_id !== input.change_id) reject('STALE_REVIEW', 'This is historical approval.'); await checkBinding(root, input); } }
+    try {
+      if (await optionalText(root, changeRoot(input.change_id) + '/applied.yaml') === null) await freshRound(root, input);
+      else {
+        const head = await sourceHead(root); if (head.change_id !== input.change_id) reject('STALE_REVIEW', 'This is historical approval.'); await checkBinding(root, input);
+        const mutable = await readRecord<{ metadata: unknown }>(root, changeRoot(input.change_id) + '/change.yaml');
+        if (!isObject(mutable) || semanticHash(mutable.metadata) !== round.manifest.metadata_hash) reject('STALE_REVIEW', 'Applied metadata changed since human review.');
+      }
+    }
     catch (error) { if (error instanceof CoreError) { result.blockers.push(...error.diagnostics); result.documents_approved = false; result.implementation_allowed = false; } else throw error; }
     return { round, draft: await readFeedbackDraft(root, round), accepted_submission: receipt, responses: processed, processed_comment_ids: processed.flatMap(response => response.comments.map(comment => comment.comment_id)), approval: result };
   });

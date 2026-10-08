@@ -48,7 +48,7 @@ test('two saved tabs conflict; submit requires exact latest saved version/body; 
   const input = { ...stale, expected_feedback_version: saved.version };
   const outcomes = await Promise.allSettled([submitReview(root, { ...input, submission_id: 'race-1' }), submitReview(root, { ...input, submission_id: 'race-2' })]);
   assert.equal(outcomes.filter(value => value.status === 'fulfilled').length, 1);
-  const rejected = outcomes.find(value => value.status === 'rejected') as PromiseRejectedResult; assert.ok(rejected.reason instanceof CoreError); assert.equal(rejected.reason.diagnostics[0].code, 'CONFLICT');
+  const rejected = outcomes.find(value => value.status === 'rejected') as PromiseRejectedResult; assert.ok(rejected.reason instanceof CoreError); assert.equal(rejected.reason.diagnostics[0].code, 'CONFLICT', rejected.reason.message);
   assert.equal((await reviewResults(root, roundBinding(round))).approval.documents_approved, true);
 }));
 

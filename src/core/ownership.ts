@@ -105,7 +105,7 @@ async function writer(root: string, owner: WriteOwnership, claim: boolean, hooks
     if (!relative.startsWith('planning/') && relative !== '.gitignore') reject('PATH_DENIED', 'Core writes only managed planning paths and the ignore block.', relative);
     await assert();
     if (path.posix.dirname(relative) !== '.') await ensureDirectory(root, path.posix.dirname(relative), assert);
-    const target = await safePath(root, relative);
+    await safePath(root, relative);
     await assert();
     await ensureDirectory(root, LOCK + '/staging', assert);
     const temporary = LOCK + '/staging/' + randomUUID() + '.tmp';
@@ -113,19 +113,22 @@ async function writer(root: string, owner: WriteOwnership, claim: boolean, hooks
     try { await handle.writeFile(raw, 'utf8'); await handle.sync(); } finally { await handle.close(); }
     await hooks.afterBoundary?.('temporary:' + relative);
     await assert(); await safePath(root, relative);
+    await assert(); await hooks.beforeMutation?.(relative); await assert();
+    const staged = await safePath(root, temporary);
+    // Resolve the destination last, after hooks/fencing; never reuse a path across them.
+    const target = await safePath(root, relative);
     if (createOnly) {
-      await assert(); await hooks.beforeMutation?.(relative); await assert();
-      try { await link(await safePath(root, temporary), target); }
+      try { await link(staged, target); }
       catch (error) { if ((error as NodeJS.ErrnoException).code === 'EEXIST') reject('CONFLICT', 'Create-only record already exists.', relative); throw error; }
       await assert(); await rm(await safePath(root, temporary));
     } else {
-      await assert(); await hooks.beforeMutation?.(relative); await assert(); await rename(await safePath(root, temporary), target);
+      await rename(staged, target);
     }
     await flushDirectory(path.dirname(target)); await assert();
     await hooks.afterBoundary?.('write:' + relative); await assert();
   };
   return { root, owner, assert, write,
-    async remove(relative) { relativePath(relative); if (!relative.startsWith('planning/')) reject('PATH_DENIED', 'Delete outside planning denied.'); const target = await safePath(root, relative); await assert(); await hooks.beforeMutation?.(relative); await assert(); await rm(target); await flushDirectory(path.dirname(target)); await assert(); await hooks.afterBoundary?.('delete:' + relative); await assert(); },
+    async remove(relative) { relativePath(relative); if (!relative.startsWith('planning/')) reject('PATH_DENIED', 'Delete outside planning denied.'); await safePath(root, relative); await assert(); await hooks.beforeMutation?.(relative); await assert(); const target = await safePath(root, relative); await rm(target); await flushDirectory(path.dirname(target)); await assert(); await hooks.afterBoundary?.('delete:' + relative); await assert(); },
     retain(value = true) { retained = value; },
     async bindJournal(relative) { relativePath(relative); if (!relative.startsWith('planning/changes/') || !relative.endsWith('/apply-transaction.yaml')) reject('PATH_DENIED', 'Invalid apply journal path.'); journal = relative; await assert(); },
     async release() { if (retained) return; await assert(); await rm(await safePath(root, LOCK), { recursive: true }); await flushDirectory(await safePath(root, 'planning/.runtime')); },
