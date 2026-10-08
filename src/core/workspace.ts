@@ -60,7 +60,7 @@ export async function workspaceIdentity(inputRoot: string): Promise<WorkspaceIde
   catch { branch = null; head = (await run('git', ['-C', root, 'rev-parse', 'HEAD'])).stdout.trim(); }
   return { canonical_root: root, git: { common_dir: await realpath(path.resolve(root, commonDir)), worktree_git_dir: await realpath(gitDir), branch_ref: branch, detached_head: head } };
 }
-async function optionalText(root: string, relative: string): Promise<string | null> {
+export async function optionalText(root: string, relative: string): Promise<string | null> {
   try { return await readText(root, relative); } catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null; throw error; }
 }
 function validateConfig(value: unknown): ProjectConfig {
@@ -109,11 +109,11 @@ export async function initializeWorkspace(inputRoot: string, name = path.basenam
     return config;
   });
 }
-async function checkBinding(root: string, binding: WorkspaceBinding): Promise<void> {
+export async function checkBinding(root: string, binding: WorkspaceBinding): Promise<void> {
   const current = await currentBinding(root);
   if (canonicalJson(current) !== canonicalJson({ project_id: binding.project_id, workspace_fingerprint: binding.workspace_fingerprint })) reject('WORKSPACE_MISMATCH', 'Project/workspace binding is stale.');
 }
-function changeRoot(id: string): string { return 'planning/changes/' + recordId(id); }
+export function changeRoot(id: string): string { return 'planning/changes/' + recordId(id); }
 function validateStoredChange(value: unknown): StoredChange {
   exact(value, ['schema_version', 'policy_version', 'canonicalization_version', 'project_id', 'workspace_fingerprint', 'change_id', 'created_at', 'display_name', 'metadata'], 'change record');
   for (const key of ['project_id', 'change_id']) { text(value[key], key); recordId(value[key]); }
@@ -141,14 +141,15 @@ async function loadManifest(root: string, id: string): Promise<DraftManifest> {
   if (new Set(ids).size !== ids.length) reject('VALIDATION_FAILED', 'Duplicate draft object IDs.');
   return value as unknown as DraftManifest;
 }
-async function loadChange(root: string, id: string): Promise<{ change: ChangeRecord; stored: StoredChange; manifest: DraftManifest }> {
+export async function loadChange(root: string, id: string, enforceBinding = true): Promise<{ change: ChangeRecord; stored: StoredChange; manifest: DraftManifest }> {
   const stored = validateStoredChange(parseYaml(await readText(root, changeRoot(id) + '/change.yaml')));
   if (stored.change_id !== id) reject('VALIDATION_FAILED', 'Change ID/path mismatch.');
-  await checkBinding(root, stored);
+  if (enforceBinding) await checkBinding(root, stored);
+  else if ((await readProjectConfig(root)).project_id !== stored.project_id) reject('WORKSPACE_MISMATCH', 'Historical change belongs to another project.');
   const manifest = await loadManifest(root, id);
   return { stored, manifest, change: { ...stored, version: semanticHash({ record: stored, draft_manifest: manifest }) } };
 }
-async function assertEditable(root: string, id: string): Promise<void> {
+export async function assertEditable(root: string, id: string): Promise<void> {
   if (await optionalText(root, changeRoot(id) + '/applied.yaml') !== null || await optionalText(root, changeRoot(id) + '/cancelled.yaml') !== null) reject('CONFLICT', 'Applied/cancelled change cannot be edited.');
 }
 async function mutate<T>(inputRoot: string, input: WorkspaceBinding & { change_id: string; expected_version: string }, action: (writer: Writer, current: Awaited<ReturnType<typeof loadChange>>) => Promise<T>): Promise<T> {
@@ -164,7 +165,8 @@ export async function createChange(inputRoot: string, input: CreateChangeRequest
   validateMetadata(input.metadata); const root = (await workspaceIdentity(inputRoot)).canonical_root;
   return withWriteLock(root, 'change create', async writer => {
     await checkBinding(root, input);
-    for (const file of await listFiles(root, 'planning/changes')) if (file.endsWith('/change.yaml')) reject('CONFLICT', 'An existing change requires record-derived lifecycle reconciliation before another can be created.');
+    const { activeChanges } = await import('./review');
+    if ((await activeChanges(root)).length) reject('CONFLICT', 'An active change already exists.');
     for (const scope of input.metadata.implementation_scope.allowlist) await safePath(root, scope.path);
     const stored: StoredChange = { ...VERSIONS, project_id: input.project_id, workspace_fingerprint: input.workspace_fingerprint, change_id: randomUUID(), created_at: new Date().toISOString(), display_name: input.display_name ?? null, metadata: input.metadata };
     if (stored.display_name !== null && typeof stored.display_name !== 'string') reject('VALIDATION_FAILED', 'Invalid display name.');
@@ -236,14 +238,16 @@ export async function loadRawSource(root: string): Promise<RawDocument[]> {
 }
 export async function readProjectedChange(inputRoot: string, id: string): Promise<ParsedDocument[]> {
   const root = (await workspaceIdentity(inputRoot)).canonical_root;
-  return withWriteLock(root, 'draft projection', async () => {
+  return withWriteLock(root, 'draft projection', async () => loadProjectedChange(root, id));
+}
+/** Caller holds the shared writer lock. */
+export async function loadProjectedChange(root: string, id: string): Promise<ParsedDocument[]> {
     const current = await loadChange(root, id); const edits: DraftEdit[] = [];
     for (const edit of current.manifest.edits) {
       if (edit.operation !== 'put') edits.push(edit);
       else { const raw = await readText(root, edit.draft_file); if (rawHash(raw) !== edit.raw_hash) reject('VALIDATION_FAILED', 'Raw draft chunk is corrupt.'); edits.push({ operation: 'put', object_id: edit.object_id, kind: edit.kind, path: edit.path, raw }); }
     }
     return projectSource(await loadRawSource(root), edits);
-  });
 }
 export async function readDraft(inputRoot: string, id: string, objectId: string): Promise<string> {
   const root = (await workspaceIdentity(inputRoot)).canonical_root;

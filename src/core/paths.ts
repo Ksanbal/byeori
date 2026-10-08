@@ -50,8 +50,10 @@ export async function ensureDirectory(root: string, relative: string, fence?: ()
     const part = segments.slice(0, index).join('/');
     const target = await safePath(root, part);
     await fence?.();
-    try { await mkdir(target); } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error; }
+    let created = false;
+    try { await mkdir(target); created = true; } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error; }
     if (!(await lstat(await safePath(root, part))).isDirectory()) reject('PATH_DENIED', 'Expected a directory.', part);
+    if (created) { await fence?.(); const parent = await open(path.dirname(target), constants.O_RDONLY | constants.O_NOFOLLOW); try { await parent.sync(); } finally { await parent.close(); } }
   }
   return safePath(root, relative);
 }
