@@ -2,7 +2,7 @@
 
 Byeori keeps product planning in reviewable files beside a project. An AI assistant can help draft and search the plans; a person reviews a frozen snapshot in the local Studio before planning is applied. Any implementation work still needs its own explicit path scope and authorization.
 
-**Status:** The public repository is [Ksanbal/byeori](https://github.com/Ksanbal/byeori). An anonymous checkout of public source commit `2965cb42c1aaa80b8f4c60a1ae0e2c21122fe118` matched all 264 shipped payload files to the manifest, and a fresh Node-only consumer smoke test passed. The intended `0.1.0-rc.1` tag and release assets have not been created. The first Linux Actions run reported 123/124 tests and 11/11 UI policy probes; its one test-fixture failure was `EPIPE`. A test-only repair is committed locally, and the full rerun is pending. Claude Code `2.1.294` local validation passed without warnings, but authenticated model checks remain unverified while signed out. The local Codex RC install discovered both hooks; the host's trust review is pending, so active enforcement is not established. See [Verification](docs/verification.md) and [Installation](docs/installation.md) for current limits.
+**Status:** Byeori targets explicit prereleases rather than stable releases. Check [GitHub Releases](https://github.com/Ksanbal/byeori/releases) for available versions and assets, and [GitHub Actions](https://github.com/Ksanbal/byeori/actions/workflows/ci.yml) for CI results. Claude model checks require sign-in; Codex hook enforcement requires host trust review. See [Verification](docs/verification.md) for current evidence.
 
 ## What it does
 
@@ -16,7 +16,7 @@ See [the product model](docs/product-model.md), [architecture](docs/architecture
 
 ## Four-step workflow
 
-1. **Install the host plugin after the RC tag is published.** Candidate commands and current verification limits are in [Installation](docs/installation.md).
+1. **Install the host plugin from a published release.** Commands and current verification limits are in [Installation](docs/installation.md).
 2. **Initialize a selected project.** From an extracted release or installed plugin, resolve its `runtime/cli.mjs` and run:
 
    ```sh
@@ -45,4 +45,4 @@ See [Contributing](CONTRIBUTING.md) for the full local workflow. The product is 
 
 ## Release and security
 
-The public repository is [github.com/Ksanbal/byeori](https://github.com/Ksanbal/byeori). The RC tag and release assets are not yet available, and remote host installation has not been tested. Installation, update and removal instructions are labeled as candidate commands until the tagged release is available. For current test scope and limits, see [Verification](docs/verification.md). For vulnerability reporting and product boundaries, see [Security](SECURITY.md).
+The public repository is [github.com/Ksanbal/byeori](https://github.com/Ksanbal/byeori). Check [GitHub Releases](https://github.com/Ksanbal/byeori/releases) for available versions and assets. For test scope and native-host limits, see [Verification](docs/verification.md). For vulnerability reporting and product boundaries, see [Security](SECURITY.md).

@@ -1,8 +1,8 @@
 # Installation, update and removal
 
-**Release status:** The intended prerelease is `0.1.0-rc.1` with tag `v0.1.0-rc.1`; the tag and release assets have not yet been created. The public repository is [Ksanbal/byeori](https://github.com/Ksanbal/byeori), and its current main source has passed an anonymous consumer smoke test. Public release installation is still untested.
+**Release status:** Use the published `v0.1.0-rc.1` prerelease when available. Check [GitHub Releases](https://github.com/Ksanbal/byeori/releases) for the current tag and assets. Command-specific verification and native-host limits are in [Verification](verification.md).
 
-**Native status:** Claude Code `2.1.294` binary provenance and both local plugin-directory and marketplace validation passed without warnings. Auth status was `loggedIn: false` / `authMethod: none`, so authenticated model-session checks remain unverified; a public GitHub marketplace install has not been attempted. The current Codex RC package is installed locally: all 42 existing plugin entries were preserved (43 total), 130 cached files matched, the TUI displayed four skills, and both Byeori `SessionStart` and `PreToolUse` hooks were discovered. Codex requires a trust review for the hooks; active enforcement has not been established. Public remote host installation remains untested. See [Verification](verification.md).
+Read [Verification](verification.md) for the latest Claude and Codex host-test evidence. A local install or hook discovery alone does not establish active enforcement.
 
 ## Runtime prerequisite
 
@@ -26,9 +26,9 @@ node "$BYEORI_CLI" init --root "$PROJECT" --json
 
 Check the result before continuing. The runtime reports Node, SQLite/FTS5, schema and write-access observations. Host `configured`, `trusted`, `probed` and `active` states are distinct; the CLI being available does not mean a native hook is active.
 
-## Candidate host installation for the prerelease tag
+## Host installation
 
-The root catalog is named `byeori-plugins`; its plugin entry is `byeori`. The following commands are the intended public install path for the `v0.1.0-rc.1` tag once it exists. They have not been run against the public repository.
+The root catalog is named `byeori-plugins`; its plugin entry is `byeori`. Use the published `v0.1.0-rc.1` tag when available. These are the documented host commands; command-specific verification is in [Verification](verification.md).
 
 ### Claude Code
 
@@ -40,7 +40,7 @@ claude plugin install byeori@byeori-plugins --scope user --json
 claude plugin list
 ```
 
-Claude Code asks the user to review/install the plugin at the chosen scope. Review hooks and their permissions before accepting. The signed-out state limits authenticated model testing; it does not establish that plugin installation is blocked. See the [official marketplace guide](https://code.claude.com/docs/en/plugin-marketplaces) and [plugin command reference](https://code.claude.com/docs/en/plugins/cli-reference). To update the marketplace and plugin:
+Claude Code asks the user to review/install the plugin at the chosen scope. Review hooks and their permissions before accepting. See the [official marketplace guide](https://code.claude.com/docs/en/plugin-marketplaces) and [plugin command reference](https://code.claude.com/docs/en/plugins/cli-reference). To update the marketplace and plugin:
 
 ```sh
 claude plugin marketplace update byeori-plugins
@@ -58,7 +58,7 @@ Use the scope where you actually installed it (`user`, `project` or `local`). Re
 
 ### Codex CLI
 
-The command names below were observed in local `codex-cli 0.161.0 --help`. The current `0.1.0-rc.1` package was installed from a local marketplace: all 42 existing plugin entries were preserved (43 total), 130 cached files matched the exported plugin, and the native TUI displayed four Byeori skills. Both `SessionStart` and `PreToolUse` hooks were discovered. Codex requires reviewing the newly discovered hooks before trust; discovery alone does not establish active enforcement. An earlier `0.1.0` portable package omitted hooks. The GitHub remote path has not been tested. The CLI reported plugin commands `add`, `list`, `remove`, and marketplace commands `add`, `list`, `upgrade`, `remove` (not `install`/`uninstall`):
+The command names below were observed in local `codex-cli 0.161.0 --help`. The CLI reported plugin commands `add`, `list`, `remove`, and marketplace commands `add`, `list`, `upgrade`, `remove` (not `install`/`uninstall`). See [Verification](verification.md) for current native-host results and limitations:
 
 ```sh
 codex plugin marketplace add Ksanbal/byeori --ref v0.1.0-rc.1 --json
@@ -74,7 +74,7 @@ codex plugin remove byeori@byeori-plugins
 codex plugin marketplace remove byeori-plugins
 ```
 
-These public-source Codex commands will change user plugin configuration/cache when executed. Review the host's confirmation and current documentation. The Byeori GitHub marketplace add/install/update/remove sequence has not been run. Local RC hook discovery is observed, but the required trust review is still pending; do not treat discovery alone as proof that enforcement is active.
+These commands change user plugin configuration/cache when executed. Review the host's confirmation and current documentation. Do not treat hook discovery alone as proof that enforcement is active.
 
 ## Project guidance versus plugin removal
 
@@ -82,4 +82,4 @@ The CLI command `host remove` removes only Byeori-managed project instruction sp
 
 ## Release source and install status
 
-Public source: <https://github.com/Ksanbal/byeori>. Anonymous source checkout and Node-only consumer smoke passed at main commit `2965cb42c1aaa80b8f4c60a1ae0e2c21122fe118`; this does not verify a tagged release or remote plugin installation. The intended version/tag is `0.1.0-rc.1` / `v0.1.0-rc.1`, and the tag and release assets are not yet available.
+Public source and releases: <https://github.com/Ksanbal/byeori>. Use the `v0.1.0-rc.1` release when available. See [Verification](verification.md) for dated evidence about source, CI, assets and remote host installation.

@@ -1,10 +1,10 @@
 # 벼리 빠른 시작
 
-**상태:** public 저장소 [Ksanbal/byeori](https://github.com/Ksanbal/byeori)의 소스 snapshot을 익명 clone으로 확인했고, Node만 사용하는 소비자 smoke test가 통과했습니다. 목표는 stable `0.1.0`이 아닌 사전 릴리스 `0.1.0-rc.1`이며 태그와 배포 asset은 아직 없습니다. 첫 Linux Actions 실행은 제품 테스트 123/124, UI 정책 검사 11/11이었고 단일 `EPIPE` fixture 오류를 고치는 테스트 전용 수정이 로컬에 commit됐습니다. 전체 원격 재실행은 아직 끝나지 않았습니다. Claude Code `2.1.294` 로컬 검증은 경고 없이 통과했지만 로그인되지 않아 인증 모델 확인은 남아 있습니다. Codex 로컬 RC 설치에서 두 훅을 발견했으나 호스트 신뢰 검토가 남아 있어 활성 강제 적용은 확인되지 않았습니다. 세부 상태는 [검증 기록](verification.md)과 [설치 안내](installation.md)를 확인하세요.
+**상태:** 벼리는 stable release 대신 명시적 사전 릴리스를 대상으로 합니다. 사용 가능한 버전과 asset은 [GitHub Releases](https://github.com/Ksanbal/byeori/releases)에서, CI 결과는 [GitHub Actions](https://github.com/Ksanbal/byeori/actions/workflows/ci.yml)에서 확인하세요. Claude 모델 확인에는 로그인이 필요하고, Codex 훅 적용에는 호스트 신뢰 검토가 필요합니다. 현재 확인 결과는 [검증 기록](verification.md)에 정리했습니다.
 
 ## 네 단계
 
-1. **호스트 플러그인 설치** — `v0.1.0-rc.1` 태그가 게시되면 [설치 안내](installation.md)의 후보 명령을 사용하세요. 공개 원격 설치는 아직 시험하지 않았습니다.
+1. **호스트 플러그인 설치** — 게시된 사전 릴리스에 맞는 명령을 [설치 안내](installation.md)에서 확인하세요.
 2. **프로젝트 초기화** — Node `>=24.13.0 <25`가 필요합니다. 설치되었거나 압축을 푼 플러그인의 `runtime/cli.mjs` 경로를 확인하고 다음을 실행합니다.
 
    ```sh

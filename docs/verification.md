@@ -1,6 +1,6 @@
 # Verification and support status
 
-This page distinguishes automated local evidence from native-host, remote and publication evidence. The local package version is prerelease `0.1.0-rc.1`, not stable `0.1.0`; the intended tag `v0.1.0-rc.1` has not yet been created. This page is not a release or security certification.
+This page distinguishes automated local evidence from native-host, remote and publication evidence. **Pre-release snapshot: 2026-10-08.** These observations describe the state before release and must be refreshed with final CI, tag, asset and installation evidence. Check [GitHub Releases](https://github.com/Ksanbal/byeori/releases) and the [live CI workflow](https://github.com/Ksanbal/byeori/actions/workflows/ci.yml) for current status. This page is not a release or security certification.
 
 ## Runtime support
 
@@ -10,8 +10,8 @@ This page distinguishes automated local evidence from native-host, remote and pu
 | Development | Node `24.13.0`, pnpm `12.10.1`, frozen lockfile. |
 | OS | Local QA observed macOS `27.0.1` (build `26A434`), Darwin kernel `27.0.0`, arm64. Linux and Windows consumer/host support have not been verified. |
 | Claude Code | Actual CLI `2.1.294` binary provenance (version, official artifact SHA-256 and macOS code signature) was verified; plugin-directory and marketplace validation passed without warnings. Auth status was `loggedIn: false` / `authMethod: none`. Authenticated model use, native hook activation and compact validation remain unverified. |
-| Codex CLI | The current `0.1.0-rc.1` package is locally installed with all 42 pre-existing plugin entries preserved (43 total); 130 cached files matched the exported plugin, the TUI showed four skills, and both Byeori `SessionStart` and `PreToolUse` hooks were discovered. Codex requires reviewing the hooks before trust; active enforcement remains unverified. An earlier `0.1.0` portable package omitted hooks. |
-| Remote CI | The first Linux Actions run reported `123/124` tests and `11/11` UI policy probes; all browser scenarios passed. Its sole failure was a test-fixture stdin `EPIPE`. A test-only repair is committed locally, and the full rerun is pending. See the [live CI workflow](https://github.com/Ksanbal/byeori/actions/workflows/ci.yml); no green remote run is claimed. |
+| Codex CLI | In this snapshot, the `0.1.0-rc.1` package was locally installed with all 42 pre-existing plugin entries preserved (43 total); 130 cached files matched the exported plugin, the TUI showed four skills, and both Byeori `SessionStart` and `PreToolUse` hooks were discovered. Codex requires reviewing the hooks before trust; active enforcement remains unverified. An earlier `0.1.0` portable package omitted hooks. |
+| Remote CI | As of this pre-release snapshot, the first Linux Actions run reported `123/124` tests and `11/11` UI policy probes; all browser scenarios passed. Its sole failure was a test-fixture stdin `EPIPE`. A test-only repair is committed locally, and the full rerun is pending. No green remote run is claimed. |
 | Public source | Anonymous checkout of public source commit `2965cb42c1aaa80b8f4c60a1ae0e2c21122fe118` verified 431 tracked files and all 264 shipped payload hashes against the manifest. A fresh Node-only consumer passed CLI help/init/doctor/status, SQLite FTS5 probe and Studio start/status/stop with HTTP assets. This is not a release-asset or remote plugin-install test. |
 | Public GitHub release | The public repository exists, but the intended `v0.1.0-rc.1` tag and release assets have not been created. |
 
