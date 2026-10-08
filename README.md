@@ -2,7 +2,7 @@
 
 Byeori keeps product planning in reviewable files beside a project. An AI assistant can help draft and search the plans; a person reviews a frozen snapshot in the local Studio before planning is applied. Any implementation work still needs its own explicit path scope and authorization.
 
-**Status:** The intended public release is the explicit prerelease `0.1.0-rc.1` (tag `v0.1.0-rc.1`), not stable `0.1.0`. The checked-in generated package metadata still says `0.1.0` and must be regenerated before publication. Claude Code `2.1.294` artifact provenance and plugin validation passed, but the host was signed out, so authenticated model-session, native hook-activation and compact checks remain blocked. Codex local plugin registration/cache installation and native TUI skill discovery passed, but its hook was not found in `/hooks`, so active enforcement is unverified; actual `workspace-write` `init`, `doctor` and `status` also failed closed with capability exit `6` while process identity could not be observed. Remote/public release checks remain pending. See [Verification](docs/verification.md) and [Installation](docs/installation.md) before relying on host protection.
+**Status:** The current package is the explicit prerelease `0.1.0-rc.1` (tag `v0.1.0-rc.1`), not stable `0.1.0`. Claude Code `2.1.294` artifact provenance and local plugin validation passed without warnings, but the host was signed out, so authenticated model-session, native hook-activation and compact checks remain unverified. The current Codex RC package is installed locally; its two hooks were discovered, and the host requires reviewing them before trust. Active enforcement is not yet established. Remote/public release checks remain pending. See [Verification](docs/verification.md) and [Installation](docs/installation.md) before relying on host protection.
 
 ## What it does
 
@@ -20,14 +20,16 @@ See [the product model](docs/product-model.md), [architecture](docs/architecture
 2. **Initialize a selected project.** From an extracted release or installed plugin, resolve its `runtime/cli.mjs` and run:
 
    ```sh
-   node <plugin-root>/runtime/cli.mjs init --root <project-directory> --json
-   node <plugin-root>/runtime/cli.mjs doctor --root <project-directory> --json
-   node <plugin-root>/runtime/cli.mjs status --root <project-directory> --json
+   BYEORI_CLI="/path/to/byeori-plugin/runtime/cli.mjs"
+   PROJECT="/path/to/project"
+   node "$BYEORI_CLI" init --root "$PROJECT" --json
+   node "$BYEORI_CLI" doctor --root "$PROJECT" --json
+   node "$BYEORI_CLI" status --root "$PROJECT" --json
    ```
 
    These commands require Node `>=24.13.0 <25`. The first writes the managed planning setup; review its result before continuing. `doctor` reports runtime and host observations, and `status` reports the bound project state.
 
-3. **Draft and prepare.** Ask the installed assistant skill to start or change the plan. It uses versioned drafts, then validates and freezes a review round. You can inspect the supported command contract with `node <plugin-root>/runtime/cli.mjs --help`.
+3. **Draft and prepare.** Ask the installed assistant skill to start or change the plan. It uses versioned drafts, then validates and freezes a review round. You can inspect the supported command contract with `node "/path/to/byeori-plugin/runtime/cli.mjs" --help`.
 4. **Review, submit and apply.** Start Studio with `studio --action start`, inspect all decisions, comments, deletions and any implementation allowlist, then explicitly submit in Studio. Afterward, ask the assistant to read the durable results. Approval of planning and permission to edit code are separate; the latter is bounded by the reviewed file or directory paths.
 
 ## Runtime and development

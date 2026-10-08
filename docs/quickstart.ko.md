@@ -1,16 +1,18 @@
 # 벼리 빠른 시작
 
-**상태:** 공개 배포 목표는 stable `0.1.0`이 아니라 명시적 사전 릴리스 `0.1.0-rc.1`(태그 `v0.1.0-rc.1`)입니다. 체크인된 생성 패키지 메타데이터는 아직 `0.1.0`이므로 공개 전에 재생성이 필요합니다. Claude Code `2.1.294` 바이너리 출처와 플러그인 검증은 통과했지만 로그인되지 않아 인증된 모델 세션, 네이티브 훅 활성화, compact 검증은 막혀 있습니다. Codex는 로컬 플러그인 설치와 네이티브 TUI의 스킬 발견이 확인됐지만 `/hooks`에서 Byeori 훅을 찾지 못해 활성 강제 적용은 확인되지 않았고, 실제 `workspace-write`의 `init`/`doctor`/`status`는 프로세스 시작·부팅 식별을 관찰하지 못해 capability 오류 6으로 실패했습니다. 원격/공개 배포도 남아 있습니다. 세부 상태는 [검증 기록](verification.md)과 [설치 안내](installation.md)를 확인하세요.
+**상태:** 현재 패키지는 stable `0.1.0`이 아닌 명시적 사전 릴리스 `0.1.0-rc.1`(태그 `v0.1.0-rc.1`)입니다. Claude Code `2.1.294` 바이너리 출처와 로컬 플러그인 검증은 경고 없이 통과했지만 로그인되지 않아 인증된 모델 세션, 네이티브 훅 활성화, compact 확인은 아직 검증되지 않았습니다. Codex RC 패키지는 로컬 설치되어 두 훅이 발견됐습니다. 호스트가 훅 신뢰 검토를 요구하므로 현재 활성 강제 적용이 확인된 것은 아닙니다. 원격/공개 배포도 남아 있습니다. 세부 상태는 [검증 기록](verification.md)과 [설치 안내](installation.md)를 확인하세요.
 
 ## 네 단계
 
-1. **호스트 플러그인 설치** — B13 네이티브 확인과 공개 배포가 끝나기 전까지 설치 명령은 후보 상태입니다. [설치 안내](installation.md)를 먼저 읽으세요.
+1. **호스트 플러그인 설치** — RC의 네이티브 확인과 공개 배포가 끝나기 전까지 설치 명령은 후보 상태입니다. [설치 안내](installation.md)를 먼저 읽으세요.
 2. **프로젝트 초기화** — Node `>=24.13.0 <25`가 필요합니다. 설치되었거나 압축을 푼 플러그인의 `runtime/cli.mjs` 경로를 확인하고 다음을 실행합니다.
 
    ```sh
-   node <플러그인-경로>/runtime/cli.mjs init --root <프로젝트-경로> --json
-   node <플러그인-경로>/runtime/cli.mjs doctor --root <프로젝트-경로> --json
-   node <플러그인-경로>/runtime/cli.mjs status --root <프로젝트-경로> --json
+   BYEORI_CLI="/path/to/byeori-plugin/runtime/cli.mjs"
+   PROJECT="/path/to/project"
+   node "$BYEORI_CLI" init --root "$PROJECT" --json
+   node "$BYEORI_CLI" doctor --root "$PROJECT" --json
+   node "$BYEORI_CLI" status --root "$PROJECT" --json
    ```
 
    `init`은 선택한 프로젝트에 관리 대상 계획 안내와 planning/workflow 파일을 만듭니다. 변경 결과를 확인한 뒤 진행하세요. 소비자 프로젝트에는 pnpm이나 개발 의존성이 필요하지 않습니다.
