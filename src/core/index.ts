@@ -10,3 +10,4 @@ export * from './state';
 export * from './services';
 
 export * from './search';
+export * from './diagnostics';
