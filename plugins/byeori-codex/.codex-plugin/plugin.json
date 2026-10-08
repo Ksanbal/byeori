@@ -1,0 +1,15 @@
+{
+  "name": "byeori",
+  "version": "0.1.0-rc.1",
+  "description": "Human-reviewed planning for AI development.",
+  "author": {
+    "name": "Ksanbal"
+  },
+  "license": "MIT",
+  "skills": "./skills",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "Byeori · 벼리",
+    "shortDescription": "Human-reviewed planning"
+  }
+}

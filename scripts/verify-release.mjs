@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
+import { lstat, mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { hooksConfig } from '../src/adapters/config.ts';
@@ -32,7 +32,14 @@ export async function verifyRelease(directory = root) {
   assert.equal(claude.plugins[0].source, './' + payloads[0]); assert.equal(codex.plugins[0].source.path, './' + payloads[1]);
   for (const [index, payload] of payloads.entries()) {
     const host = index === 0 ? 'claude' : 'codex', plugin = path.join(directory, payload);
-    const pluginManifest = JSON.parse(await readFile(path.join(plugin, host === 'claude' ? '.claude-plugin/plugin.json' : 'plugin.json')));
+    const pluginManifest = JSON.parse(await readFile(path.join(plugin, host === 'claude' ? '.claude-plugin/plugin.json' : '.codex-plugin/plugin.json')));
+    if (host === 'codex') {
+      const rootManifest = await lstat(path.join(plugin, 'plugin.json')).catch(error => { if (error.code === 'ENOENT') return null; throw error; });
+      assert.equal(rootManifest, null, 'Codex root plugin.json would shadow Legacy hook discovery');
+      assert.ok(!pluginManifest.$schema && !pluginManifest.extensions, 'Codex uses the supported Legacy manifest');
+      assert.equal(pluginManifest.skills, './skills'); assert.equal(pluginManifest.hooks, './hooks/hooks.json');
+      assert.equal(pluginManifest.interface.displayName, 'Byeori · 벼리');
+    }
     assert.equal(pluginManifest.version, metadata.version); assert.equal(pluginManifest.name, 'byeori'); assert.equal(pluginManifest.license, 'MIT');
     assert.deepEqual(JSON.parse(await readFile(path.join(plugin, 'hooks/hooks.json'))), hooksConfig(host));
     assert.deepEqual(await hashes(path.join(plugin, 'runtime/schemas')), await hashes(path.join(root, 'schemas')));

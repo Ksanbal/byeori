@@ -73,8 +73,9 @@ for (const [index, destination] of payloads.entries()) {
   await cp(runtime, path.join(plugin, 'runtime'), { recursive: true });
   await cp(path.join(root, 'LICENSE'), path.join(plugin, 'LICENSE')); await cp(path.join(root, 'THIRD_PARTY_NOTICES'), path.join(plugin, 'THIRD_PARTY_NOTICES'));
   const manifest = { name: 'byeori', version: metadata.version, description, author: { name: 'Ksanbal' }, license: 'MIT' };
-  if (host === 'codex') Object.assign(manifest, { $schema: 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json', extensions: { 'com.openai': { hooks: './hooks/hooks.json', interface: { displayName: 'Byeori · 벼리', shortDescription: 'Human-reviewed planning' } } } });
-  await json(path.join(plugin, host === 'claude' ? '.claude-plugin/plugin.json' : 'plugin.json'), manifest);
+  // Codex 0.161 loads hooks only through Legacy; a schema-bearing root manifest shadows it.
+  if (host === 'codex') Object.assign(manifest, { skills: './skills', hooks: './hooks/hooks.json', interface: { displayName: 'Byeori · 벼리', shortDescription: 'Human-reviewed planning' } });
+  await json(path.join(plugin, host === 'claude' ? '.claude-plugin/plugin.json' : '.codex-plugin/plugin.json'), manifest);
   await json(path.join(plugin, 'hooks/hooks.json'), hooksConfig(host));
   for (const common of ['init', 'start', 'change', 'review']) {
     const name = host === 'claude' ? common : 'byeori-' + common;
@@ -85,7 +86,7 @@ for (const [index, destination] of payloads.entries()) {
     await cp(path.join(root, 'skills-src/references'), path.join(directory, 'references'), { recursive: true });
   }
 }
-await json(path.join(root, '.claude-plugin/marketplace.json'), { name: 'byeori-plugins', owner: { name: 'Ksanbal' }, plugins: [{ name: 'byeori', source: './plugins/byeori-claude', description }] });
+await json(path.join(root, '.claude-plugin/marketplace.json'), { name: 'byeori-plugins', owner: { name: 'Ksanbal' }, metadata: { description }, plugins: [{ name: 'byeori', source: './plugins/byeori-claude', description }] });
 await json(path.join(root, '.agents/plugins/marketplace.json'), { name: 'byeori-plugins', plugins: [{ name: 'byeori', source: { source: 'local', path: './plugins/byeori-codex' }, policy: { installation: 'AVAILABLE', authentication: 'ON_INSTALL' }, category: 'Productivity' }] });
 const cliStage = path.join(staging, 'cli-package'); await mkdir(cliStage);
 await cp(runtime, path.join(cliStage, 'runtime'), { recursive: true });

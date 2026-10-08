@@ -3,6 +3,9 @@
   "owner": {
     "name": "Ksanbal"
   },
+  "metadata": {
+    "description": "Human-reviewed planning for AI development."
+  },
   "plugins": [
     {
       "name": "byeori",
