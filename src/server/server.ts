@@ -8,7 +8,7 @@ import { reject } from '../core/errors';
 import { withWriteLock } from '../core/ownership';
 import { safePath } from '../core/paths';
 import { createHumanReview, createReviewCore, result } from '../core/services';
-import { readHost } from '../core/state';
+import { refreshHosts } from '../adapters/probe';
 import { workspaceIdentity } from '../core/workspace';
 import { checkHeaders, equalSecret, fields, headers, HttpError, jsonBody, publicResult, responseStatus, routePath, safeResult, send } from './protocol';
 import { inspectStudio, managementProof, publicRuntime, randomSecret, readRuntime, RUNTIME_PATH, sameRuntime, stopOwnedStudio, type RuntimeRecord } from './runtime';
@@ -79,7 +79,7 @@ export async function startStudio(inputRoot: string, options: StudioServerOption
           const currentSession = session(request);
           if (request.method === 'GET') {
             if (['/api/document', '/api/history', '/api/review/results', '/api/review/draft', '/api/review/submit', '/api/advisory'].includes(route)) throw new HttpError(405, 'VALIDATION_FAILED', 'This route requires a bounded POST.');
-            const value: Result<unknown> | null = route === '/api/session' ? await safeResult(async () => ({ csrf_token: currentSession.csrf })) : route === '/api/state' ? await runCore(route, () => human.studioState()) : route === '/api/status' ? await runCore(route, () => core.status()) : route === '/api/hosts' ? await runCore(route, () => result(async () => [await readHost(root, 'claude'), await readHost(root, 'codex')])) : null;
+            const value: Result<unknown> | null = route === '/api/session' ? await safeResult(async () => ({ csrf_token: currentSession.csrf })) : route === '/api/state' ? await runCore(route, () => human.studioState()) : route === '/api/status' ? await runCore(route, () => core.status()) : route === '/api/hosts' ? await runCore(route, () => result(() => refreshHosts(root))) : null;
             if (!value) throw new HttpError(404, 'VALIDATION_FAILED', 'Unknown Studio API route.');
             const safe = publicResult(value, [root, record.management_secret]); send(response, safe); return;
           }
