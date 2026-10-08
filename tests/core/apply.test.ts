@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
+import { fork } from 'node:child_process';
+import { once } from 'node:events';
 import { readFileSync } from 'node:fs';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { stringify } from 'yaml';
 import type { ChangeMetadata, ReviewSubmission } from '../../src/contracts';
 import { apply, recover } from '../../src/core/apply';
@@ -32,6 +35,9 @@ test('apply uses frozen after and durable chain; replay after apply; implementat
   assert.equal(second.round.manifest.base_source_hash, second.round.manifest.target_source_hash); assert.equal(second.round.manifest.base_applied_change_id, first.change.change_id);
   const next = await apply(root, roundBinding(second.round)); assert.equal(next.base_applied_change_id, first.change.change_id); assert.equal((await sourceHead(root)).change_id, second.change.change_id);
   assert.equal((await submitReview(root, first.submission)).replayed, true);
+  const child = fork(fileURLToPath(new URL('../fixtures/receipt-child.ts', import.meta.url)), [root, Buffer.from(JSON.stringify(first.submission)).toString('base64url')], { execArgv: ['--import', 'tsx'], stdio: ['ignore', 'pipe', 'pipe', 'ipc'] }); const exited = once(child, 'exit');
+  try { const [receipt] = await Promise.race([once(child, 'message'), exited.then(() => { throw new Error('Restarted receipt reader exited before replay'); })]); assert.equal(receipt.replayed, true); assert.equal(receipt.payload_hash, (await submitReview(root, first.submission)).payload_hash); assert.equal((await exited)[0], 0); }
+  finally { if (child.exitCode === null && child.signalCode === null) { child.kill('SIGKILL'); await exited; } }
   await writeFile(path.join(root, 'planning/source/unplanned.yaml'), readFileSync(new URL('../fixtures/planning/entity.yaml', import.meta.url), 'utf8'));
   await deny(() => sourceHead(root), 'SOURCE_DRIFT');
 }));
