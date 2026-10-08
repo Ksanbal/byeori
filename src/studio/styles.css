@@ -5,6 +5,8 @@
   --color-background: var(--background);
   --color-card: var(--background);
   --color-card-foreground: var(--foreground);
+  --color-popover: var(--background);
+  --color-popover-foreground: var(--foreground);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
@@ -51,6 +53,10 @@
 /* Named component layout preserves the upstream optional icon column. */
 @utility alert-grid { grid-template-columns: 0 1fr; }
 @utility alert-icon-grid { grid-template-columns: calc(var(--spacing) * 4) 1fr; }
+@utility select-available-height { max-height: var(--radix-select-content-available-height); }
+@utility select-origin { transform-origin: var(--radix-select-content-transform-origin); }
+@utility select-trigger-height { height: var(--radix-select-trigger-height); }
+@utility select-trigger-width { min-width: var(--radix-select-trigger-width); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

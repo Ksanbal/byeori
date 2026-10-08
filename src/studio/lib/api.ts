@@ -1,4 +1,4 @@
-import type { Diagnostic, Result } from '../../contracts';
+import type { Diagnostic, HostCapability, Result } from '../../contracts';
 
 export class ApiError extends Error {
   constructor(readonly diagnostics: Diagnostic[], readonly status: number) {
@@ -34,7 +34,11 @@ export async function getState<T>(signal?: AbortSignal): Promise<T> {
   await csrf();
   return read(() => response(fetch('/api/state', { credentials: 'same-origin' })), signal);
 }
-export async function post<T>(route: '/api/document' | '/api/history' | '/api/review/results', body: unknown, signal?: AbortSignal): Promise<T> {
+export async function getHosts(signal?: AbortSignal): Promise<HostCapability[]> {
+  await csrf();
+  return read(() => response(fetch('/api/hosts', { credentials: 'same-origin' })), signal);
+}
+export async function post<T>(route: '/api/document' | '/api/history' | '/api/review/results' | '/api/review/draft' | '/api/review/submit' | '/api/advisory', body: unknown, signal?: AbortSignal): Promise<T> {
   const token = await csrf();
   try {
     return await read<T>(() => response(fetch(route, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Byeori-CSRF': token }, body: JSON.stringify(body) })), signal);
