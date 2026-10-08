@@ -8,3 +8,5 @@ export * from './review';
 export * from './apply';
 export * from './state';
 export * from './services';
+
+export * from './search';
