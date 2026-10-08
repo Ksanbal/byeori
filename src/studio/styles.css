@@ -1,7 +1,10 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 @theme inline {
   --color-background: var(--background);
+  --color-card: var(--background);
+  --color-card-foreground: var(--foreground);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
@@ -43,4 +46,12 @@
 @layer base {
   * { @apply border-border outline-ring/50; }
   body { @apply bg-background text-foreground; }
+}
+
+/* Named component layout preserves the upstream optional icon column. */
+@utility alert-grid { grid-template-columns: 0 1fr; }
+@utility alert-icon-grid { grid-template-columns: calc(var(--spacing) * 4) 1fr; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
