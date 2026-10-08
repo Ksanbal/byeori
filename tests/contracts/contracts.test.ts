@@ -25,7 +25,7 @@ const documents: PlanningObject[] = [
 const hash = 'a'.repeat(64);
 const submission: ReviewSubmission = {
   schema_version: 1, submission_id: 'submission-1', project_id: 'project-1', workspace_fingerprint: hash,
-  change_id: 'change-1', round: 1, manifest_hash: hash, final_confirmation: true,
+  change_id: 'change-1', round: 1, manifest_hash: hash, expected_feedback_version: hash, final_confirmation: true,
   implementation_authorization: { allowed: false, scope_hash: null },
   items: [
     { item_id: 'PRD-ONE', decision: 'approve', comments: [] },
@@ -50,6 +50,11 @@ test('mixed review and stable OpenAPI targets remain distinct from approval', ()
   assert.equal(review({ ...submission, implementation_authorization: { allowed: true, scope_hash: hash } }), true);
   assert.equal(review({ ...submission, submission_id: '../escape' }), false);
   assert.equal(review({ ...submission, workspace_fingerprint: 'arbitrary' }), false);
+  const missingVersion = { ...submission } as Record<string, unknown>;
+  delete missingVersion.expected_feedback_version;
+  assert.equal(review(missingVersion), false);
+  assert.equal(review({ ...submission, expected_feedback_version: 'old-draft' }), false);
+  assert.equal(review({ ...submission, final_confirmation: false }), false);
   assert.equal(review({ ...submission, implementation_authorization: { allowed: true, scope_hash: null } }), false);
   assert.equal(review({ ...submission, implementation_authorization: { allowed: false, scope_hash: hash } }), false);
   // Valid input shape is intentionally not evidence that pending/request_changes is approved.

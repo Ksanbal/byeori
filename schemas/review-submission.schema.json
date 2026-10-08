@@ -135,7 +135,7 @@
       "minItems": 1
     },
     "final_confirmation": {
-      "type": "boolean"
+      "const": true
     },
     "implementation_authorization": {
       "oneOf": [
@@ -173,6 +173,10 @@
           "additionalProperties": false
         }
       ]
+    },
+    "expected_feedback_version": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
     }
   },
   "required": [
@@ -185,7 +189,8 @@
     "manifest_hash",
     "items",
     "final_confirmation",
-    "implementation_authorization"
+    "implementation_authorization",
+    "expected_feedback_version"
   ],
   "additionalProperties": false
 }

@@ -60,7 +60,7 @@ export interface UpdateChangeRequest extends ChangeMutation { metadata: ChangeMe
 export interface DraftWriteResult { change: ChangeRecord; draft: DraftDocument | null; diagnostics: Diagnostic[] }
 export type PrepareReviewRequest = ChangeMutation;
 export interface ReviewResults {
-  round: ReviewRound; draft: ReviewDraft | null; submissions: SubmittedReview[];
+  round: ReviewRound; draft: ReviewDraft | null; accepted_submission: SubmittedReview | null;
   responses: FeedbackResponse[]; processed_comment_ids: RecordId[];
   approval: { documents_approved: boolean; implementation_allowed: boolean; blockers: Diagnostic[] };
 }

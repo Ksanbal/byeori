@@ -56,7 +56,7 @@ export type ImplementationAuthorization = { allowed: true; scope_hash: Hash } | 
 export interface ReviewFeedback { items: ReviewDecision[]; implementation_authorization: ImplementationAuthorization }
 export interface ReviewBinding extends WorkspaceBinding { change_id: RecordId; round: number; manifest_hash: Hash }
 export interface ReviewSubmission extends ReviewBinding, ReviewFeedback {
-  schema_version: 1; submission_id: RecordId; final_confirmation: boolean;
+  schema_version: 1; submission_id: RecordId; expected_feedback_version: Hash; final_confirmation: true;
 }
 /** Produced by Core only after the authenticated Studio explicit-submit route succeeds. */
 export interface SubmittedReview {
@@ -70,8 +70,15 @@ export interface FeedbackResponse extends ReviewBinding {
   comments: { comment_id: RecordId; result: 'proposed' | 'addressed_in_draft' | 'needs_clarification' | 'not_applied'; changed_paths: RelativePath[]; rationale: string }[];
 }
 export interface CancellationRecord extends WorkspaceBinding { change_id: RecordId; cancelled_at: Timestamp; reason: string }
+/** Persisted outside disposable cache; original anchor and recovery claim have unique nonces. */
+export interface WriteOwnership {
+  schema_version: 1; anchor_nonce: RecordId; owner_nonce: RecordId;
+  process: { pid: number; start_identity: string; boot_identity: string };
+  operation: string; acquired_at: Timestamp;
+}
 export interface ApplyTransaction extends ReviewBinding, ContractVersions {
   transaction_id: RecordId; submission_id: RecordId; payload_hash: Hash;
+  owner: WriteOwnership;
   base_applied_change_id: RecordId | null;
   base_source_hash: Hash; target_source_hash: Hash;
   before_source: SourceManifest; after_source: SourceManifest;
