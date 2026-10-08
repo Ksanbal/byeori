@@ -45,14 +45,19 @@ export async function inspectStudio(root: string): Promise<StudioRuntime> {
   await control(record, 'identity'); return publicRuntime(record);
 }
 export async function stopOwnedStudio(root: string, expectedNonce?: string): Promise<StudioRuntime> {
-  return withWriteLock(root, 'studio stop', async writer => {
-    const record = await readRuntime(root); if (!record) return STOPPED;
+  // Quiesce HTTP operations before taking Core ownership: admitted operations need that lock.
+  const record = await readRuntime(root);
+  if (record) {
     if (expectedNonce !== undefined && record.owner.owner_nonce !== expectedNonce) reject('CONFLICT', 'Studio handle does not own this runtime.');
     const live = await probeOwnership(record.owner); if (live === 'unknown') reject('APPLY_RECOVERY_REQUIRED', 'Studio identity is uncertain; no process was signalled.');
     if (live === 'alive') {
       await control(record, 'identity'); await control(record, 'stop');
     }
-    if (!sameRuntime(await readRuntime(root), record)) reject('CONFLICT', 'Studio owner record changed before cleanup.');
+  }
+  return withWriteLock(root, 'studio stop', async writer => {
+    const current = await readRuntime(root);
+    if (!record) { if (current) reject('CONFLICT', 'Studio started before stop acquired ownership.'); return STOPPED; }
+    if (!sameRuntime(current, record)) reject('CONFLICT', 'Studio owner record changed before cleanup.');
     await writer.remove(RUNTIME_PATH); return STOPPED;
   });
 }

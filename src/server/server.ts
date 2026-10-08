@@ -11,6 +11,7 @@ import { createHumanReview, createReviewCore, result } from '../core/services';
 import { workspaceIdentity } from '../core/workspace';
 import { checkHeaders, equalSecret, fields, headers, HttpError, jsonBody, publicResult, responseStatus, routePath, safeResult, send } from './protocol';
 import { inspectStudio, managementProof, publicRuntime, randomSecret, readRuntime, RUNTIME_PATH, sameRuntime, stopOwnedStudio, type RuntimeRecord } from './runtime';
+import { operationObserved } from './operation-observation';
 
 export interface StudioServerOptions { assetsRoot: string; port?: number }
 export interface StudioServerHandle { runtime: StudioRuntime; close(): Promise<Result<StudioRuntime>> }
@@ -37,6 +38,13 @@ export async function startStudio(inputRoot: string, options: StudioServerOption
     if (await readRuntime(root)) reject('CONFLICT', 'Studio runtime already exists; inspect or stop its verified owner first.');
     const core = createReviewCore(root); const human = createHumanReview(root);
     let record: RuntimeRecord | null = null; let origin = ''; let cookieName = ''; let closing = false;
+    let activeCore = 0; let drained: (() => void) | null = null;
+    const runCore = async <T>(route: string, action: () => Promise<Result<T>>): Promise<Result<T>> => {
+      if (closing) throw new HttpError(503, 'CAPABILITY_UNAVAILABLE', 'Studio is stopping; this operation was not admitted.');
+      activeCore++;
+      try { await operationObserved(root, { phase: 'admitted', route }); const value = await action(); await operationObserved(root, { phase: 'completed', route }); return value; }
+      finally { activeCore--; if (activeCore === 0) { drained?.(); drained = null; } }
+    };
     const sessions = new Map<string, Session>(); const usedChallenges = new Set<string>();
     const session = (request: IncomingMessage): Session => {
       const token = cookie(request, cookieName); const found = token === null ? undefined : sessions.get(token);
@@ -57,27 +65,33 @@ export async function startStudio(inputRoot: string, options: StudioServerOption
           const body = await jsonBody(request); fields(body, []);
           if (!sameRuntime(await readRuntime(root), record)) throw new HttpError(409, 'CONFLICT', 'Studio runtime ownership changed.');
           usedChallenges.add(challenge); if (usedChallenges.size > 128) usedChallenges.delete(usedChallenges.values().next().value!);
+          if (action === 'stop') {
+            if (closing) throw new HttpError(409, 'CONFLICT', 'Studio is already stopping.');
+            closing = true; sessions.clear(); await operationObserved(root, { phase: 'quiescing' });
+            if (activeCore > 0) await new Promise<void>(resolve => { drained = resolve; });
+          }
           send(response, await safeResult(async () => ({ owner: record!.owner, proof: managementProof(record!, 'response:' + action, challenge) })));
-          if (action === 'stop') { closing = true; sessions.clear(); setImmediate(() => { void closeServer(server).catch(() => {}); }); }
+          if (action === 'stop') setImmediate(() => { void closeServer(server).catch(() => {}); });
           return;
         }
         if (route.startsWith('/api/')) {
           const currentSession = session(request);
           if (request.method === 'GET') {
             if (['/api/document', '/api/history', '/api/review/results', '/api/review/draft', '/api/review/submit', '/api/advisory'].includes(route)) throw new HttpError(405, 'VALIDATION_FAILED', 'This route requires a bounded POST.');
-            const value: Result<unknown> | null = route === '/api/session' ? await safeResult(async () => ({ csrf_token: currentSession.csrf })) : route === '/api/state' ? await human.studioState() : route === '/api/status' ? await core.status() : null;
+            const value: Result<unknown> | null = route === '/api/session' ? await safeResult(async () => ({ csrf_token: currentSession.csrf })) : route === '/api/state' ? await runCore(route, () => human.studioState()) : route === '/api/status' ? await runCore(route, () => core.status()) : null;
             if (!value) throw new HttpError(404, 'VALIDATION_FAILED', 'Unknown Studio API route.');
             const safe = publicResult(value, [root, record.management_secret]); send(response, safe); return;
           }
           if (request.headers.origin !== origin || !equalSecret(request.headers['x-byeori-csrf'], currentSession.csrf)) throw new HttpError(403, 'AUTH_REQUIRED', 'Studio mutation requires exact Origin and the current session CSRF proof.');
           const body = await jsonBody(request); let value: Result<unknown>;
+          if (closing) throw new HttpError(503, 'CAPABILITY_UNAVAILABLE', 'Studio is stopping; this operation was not admitted.');
           switch (route) {
-            case '/api/document': fields(body, ['object_id'], ['scope', 'revision']); value = await core.get(body as unknown as GetRequest); break;
-            case '/api/history': fields(body, [], ['object_id', 'change_id', 'limit', 'cursor']); value = await core.history(body as HistoryRequest); break;
-            case '/api/review/results': fields(body, BINDING_FIELDS); value = await core.reviewResults(body as unknown as ReviewBinding); break;
-            case '/api/review/draft': fields(body, [...BINDING_FIELDS, 'items', 'implementation_authorization', 'expected_version']); value = await human.saveReviewDraft(body as unknown as SaveReviewDraftRequest); break;
-            case '/api/review/submit': fields(body, [...BINDING_FIELDS, 'items', 'implementation_authorization', 'schema_version', 'submission_id', 'expected_feedback_version', 'final_confirmation']); value = await human.submitReview(body as unknown as ReviewSubmission); break;
-            case '/api/advisory': fields(body, ['host', 'reason']); value = await human.selectAdvisory(body as unknown as { host: 'claude' | 'codex'; reason: string }); break;
+            case '/api/document': fields(body, ['object_id'], ['scope', 'revision']); value = await runCore(route, () => core.get(body as unknown as GetRequest)); break;
+            case '/api/history': fields(body, [], ['object_id', 'change_id', 'limit', 'cursor']); value = await runCore(route, () => core.history(body as HistoryRequest)); break;
+            case '/api/review/results': fields(body, BINDING_FIELDS); value = await runCore(route, () => core.reviewResults(body as unknown as ReviewBinding)); break;
+            case '/api/review/draft': fields(body, [...BINDING_FIELDS, 'items', 'implementation_authorization', 'expected_version']); value = await runCore(route, () => human.saveReviewDraft(body as unknown as SaveReviewDraftRequest)); break;
+            case '/api/review/submit': fields(body, [...BINDING_FIELDS, 'items', 'implementation_authorization', 'schema_version', 'submission_id', 'expected_feedback_version', 'final_confirmation']); value = await runCore(route, () => human.submitReview(body as unknown as ReviewSubmission)); break;
+            case '/api/advisory': fields(body, ['host', 'reason']); value = await runCore(route, () => human.selectAdvisory(body as unknown as { host: 'claude' | 'codex'; reason: string })); break;
             default: throw new HttpError(404, 'VALIDATION_FAILED', 'Unknown Studio API route.');
           }
           const safe = publicResult(value, [root, record.management_secret]); send(response, safe, responseStatus(safe)); return;
