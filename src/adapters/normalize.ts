@@ -43,10 +43,38 @@ function patchPaths(root: string, command: unknown, cwd: string, aliasRoot: stri
 }
 // ponytail: intentionally a literal-command subset; extend only with a documented operation and boundary tests.
 export function literalWords(command: string): string[] | null {
-  if (command.includes('\0') || /[\n\r`$;&|<>()\\]/.test(command)) return null;
-  const tokens = command.match(/'[^']*'|"[^"]*"|[^\s'"]+/g);
-  if (!tokens || tokens.join(' ').replaceAll(/\s+/g, ' ') !== command.trim().replaceAll(/\s+/g, ' ')) return null;
-  return tokens.map(token => /^["']/.test(token) ? token.slice(1, -1) : token);
+  if (command.includes('\0')) return null;
+  const words: string[] = []; let index = 0;
+  const separator = (character: string) => character === ' ' || character === '\t';
+  while (index < command.length) {
+    if (separator(command[index])) { index++; continue; }
+    let word = ''; const quote = command[index];
+    if (quote === "'" || quote === '"') {
+      index++;
+      while (true) {
+        if (index === command.length) return null;
+        const character = command[index++];
+        if (character === quote) {
+          // Only shellQuote's literal apostrophe splice may concatenate quoted segments.
+          if (quote === "'" && command.slice(index, index + 3) === "\\''") { word += "'"; index += 3; continue; }
+          break;
+        }
+        // Double quotes still expand dollars/backticks and interpret backslashes in a shell.
+        if (quote === '"' && '$\x60\\\n\r'.includes(character)) return null;
+        word += character;
+      }
+      if (index < command.length && !separator(command[index])) return null;
+    } else {
+      while (index < command.length && !separator(command[index])) {
+        const character = command[index++];
+        // No expansion, globbing, comments, operators, quoting or escaped shell syntax.
+        if ('\n\r\x60$;&|<>()\\*?[]{}~#!\'"'.includes(character)) return null;
+        word += character;
+      }
+    }
+    words.push(word);
+  }
+  return words.length ? words : null;
 }
 export function normalizeTool(root: string, host: HostId, input: HookInput, canonicalCwd = root): Pick<GateRequest, 'tool' | 'operation' | 'paths'> {
   const aliasRoot = path.resolve(input.cwd, path.relative(canonicalCwd, root));

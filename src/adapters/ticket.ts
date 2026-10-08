@@ -14,7 +14,7 @@ export function hookTicket(value: string): string {
 }
 export interface LiteralGate { ticket: string; request: GateRequest; argv_hash: string; command_hash: string }
 export async function literalGate(root: string, host: HostId, input: HookInput): Promise<LiteralGate | null> {
-  if (!['Bash', 'exec_command'].includes(input.tool_name ?? '') || typeof input.tool_input?.command !== 'string') return null;
+  if (!['Bash', 'exec_command'].includes(input.tool_name ?? '') || typeof input.tool_input?.command !== 'string' || Object.hasOwn(input.tool_input, 'workdir') || Object.hasOwn(input.tool_input, 'cwd')) return null;
   const command = input.tool_input.command; const words = literalWords(command);
   if (!words || words.length !== 11 || words[0] !== 'node' || words[2] !== 'gate' || words[3] !== 'check' || words[4] !== '--root' || words[6] !== '--json' || words[7] !== '--hook-ticket' || words[9] !== '--input') return null;
   try {
