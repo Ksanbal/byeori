@@ -1,0 +1,6 @@
+# pnpm 12 reads project settings here; this remains a single root package.
+engineStrict: true
+saveExact: true
+storeDir: .delivery/pnpm-store
+allowBuilds:
+  esbuild: true
