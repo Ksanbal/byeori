@@ -1,0 +1,9 @@
+{
+  "name": "byeori",
+  "version": "0.1.0",
+  "description": "Human-reviewed planning for AI development.",
+  "author": {
+    "name": "Ksanbal"
+  },
+  "license": "MIT"
+}

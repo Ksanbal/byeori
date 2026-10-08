@@ -15,7 +15,7 @@ function leaves(value: JsonValue): string[] {
 }
 test('real Chrome9 views, frozen history, responsive keyboard navigation and escaped OpenAPI content', {timeout:120000}, async () => {
  const fixture=await studioFixture(); const browser=await chromium.launch({channel:'chrome',headless:true});
- const screenshots=path.resolve('.delivery/agents/B07-screenshots/readviews');await mkdir(screenshots,{recursive:true});
+ const screenshots=path.resolve('artifacts/test-screenshots/readviews');await mkdir(screenshots,{recursive:true});
  try {
   const context=await browser.newContext({viewport:{width:1440,height:900}});const page=await context.newPage();const errors:string[]=[];const remote:string[]=[];
   page.on('pageerror',error=>errors.push(error.message)); page.on('console',message=>{if(message.type()==='error')errors.push(message.text());});
@@ -61,7 +61,7 @@ test('invalid real draft is preserved and displays a truthful retryable error, w
   await page.getByRole('tab',{name:'문서',exact:true}).click();await page.getByRole('button',{name:'변경 초안',exact:true}).click();
   await expect(page.getByRole('alert')).toContainText('문서나 요청이 유효하지 않습니다');await expect(page.locator('article:visible')).toHaveCount(0);
   await page.getByRole('button',{name:'다시 시도',exact:true}).click();await expect(page.getByRole('alert')).toContainText('문서나 요청이 유효하지 않습니다');
-  await page.screenshot({path:path.resolve('.delivery/agents/B07-screenshots/readviews/invalid-draft.png')});
+  await page.screenshot({path:path.resolve('artifacts/test-screenshots/readviews/invalid-draft.png')});
   await page.getByRole('tab',{name:'리뷰',exact:true}).click();await page.getByRole('navigation',{name:'문서 목록'}).getByRole('button',{name:/SCN-MSG-001/}).click();await expect(page.locator('article:visible')).toContainText('STEP-SEND');
   assert.equal(await readFile(path.join(fixture.root,'planning/changes',fixture.change.change_id,'draft',rawHash(broken)+'.yaml'),'utf8'),broken);
   await context.close();

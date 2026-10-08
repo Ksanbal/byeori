@@ -1,3 +1,4 @@
+import { RUNTIME_VERSION } from '../version';
 import { constants } from 'node:fs';
 import { access } from 'node:fs/promises';
 import { DatabaseSync } from 'node:sqlite';
@@ -54,5 +55,5 @@ export async function doctor(inputRoot: string): Promise<DoctorResult> {
   }
   const instructionPaths: string[] = [];
   for (const file of ['AGENTS.md', 'CLAUDE.md']) { try { await readText(root, file); instructionPaths.push(file); } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; } }
-  return { node: { version: process.version, compatible }, sqlite: { available, fts5_probed: fts5, extension_loading: false }, schemas: { runtime_version: '0.1.0', schema_version: VERSIONS.schema_version, compatible: schemasCompatible }, writable, instruction_paths: instructionPaths, hosts: [await readHost(root, 'claude'), await readHost(root, 'codex')], status: continuity };
+  return { node: { version: process.version, compatible }, sqlite: { available, fts5_probed: fts5, extension_loading: false }, schemas: { runtime_version: RUNTIME_VERSION, schema_version: VERSIONS.schema_version, compatible: schemasCompatible }, writable, instruction_paths: instructionPaths, hosts: [await readHost(root, 'claude'), await readHost(root, 'codex')], status: continuity };
 }

@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
 import type { CoreApi, QueryScope, Result } from '../contracts';
 import { DIAGNOSTIC_EXIT_CODES, DOCUMENT_KINDS } from '../contracts';
 import { doctor, lint } from '../core/diagnostics';
@@ -112,6 +111,6 @@ export async function execute(argv: string[]): Promise<Result<unknown>> {
     return response.data;
   });
 }
-if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+if (import.meta.main) {
   const response = await execute(process.argv.slice(2)); process.stdout.write(JSON.stringify(response) + '\n'); process.exitCode = response.ok ? 0 : DIAGNOSTIC_EXIT_CODES[response.diagnostics[0].code];
 }

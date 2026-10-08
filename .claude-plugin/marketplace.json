@@ -1,0 +1,13 @@
+{
+  "name": "byeori-plugins",
+  "owner": {
+    "name": "Ksanbal"
+  },
+  "plugins": [
+    {
+      "name": "byeori",
+      "source": "./plugins/byeori-claude",
+      "description": "Human-reviewed planning for AI development."
+    }
+  ]
+}

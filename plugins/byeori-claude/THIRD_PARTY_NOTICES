@@ -1,0 +1,129 @@
+Byeori third-party notices
+
+Bundled runtime and Studio dependencies retain their original licenses.
+The inventory includes emitted CSS and shadcn-derived component attribution.
+
+@floating-ui/core@1.8.0 — MIT
+  runtime/licenses/floating-ui__core-1.8.0-LICENSE
+@floating-ui/dom@1.8.0 — MIT
+  runtime/licenses/floating-ui__dom-1.8.0-LICENSE
+@floating-ui/react-dom@2.1.9 — MIT
+  runtime/licenses/floating-ui__react-dom-2.1.9-LICENSE
+@floating-ui/utils@0.2.12 — MIT
+  runtime/licenses/floating-ui__utils-0.2.12-LICENSE
+@radix-ui/number@1.1.3 — MIT
+  runtime/licenses/radix-ui__number-1.1.3-LICENSE
+@radix-ui/primitive@1.1.7 — MIT
+  runtime/licenses/radix-ui__primitive-1.1.7-LICENSE
+@radix-ui/react-checkbox@1.3.12 — MIT
+  runtime/licenses/radix-ui__react-checkbox-1.3.12-LICENSE
+@radix-ui/react-collapsible@1.1.21 — MIT
+  runtime/licenses/radix-ui__react-collapsible-1.1.21-LICENSE
+@radix-ui/react-collection@1.1.16 — MIT
+  runtime/licenses/radix-ui__react-collection-1.1.16-LICENSE
+@radix-ui/react-compose-refs@1.1.5 — MIT
+  runtime/licenses/radix-ui__react-compose-refs-1.1.5-LICENSE
+@radix-ui/react-context@1.2.2 — MIT
+  runtime/licenses/radix-ui__react-context-1.2.2-LICENSE
+@radix-ui/react-dialog@1.2.0 — MIT
+  runtime/licenses/radix-ui__react-dialog-1.2.0-LICENSE
+@radix-ui/react-direction@1.1.5 — MIT
+  runtime/licenses/radix-ui__react-direction-1.1.5-LICENSE
+@radix-ui/react-dismissable-layer@1.1.20 — MIT
+  runtime/licenses/radix-ui__react-dismissable-layer-1.1.20-LICENSE
+@radix-ui/react-focus-guards@1.1.6 — MIT
+  runtime/licenses/radix-ui__react-focus-guards-1.1.6-LICENSE
+@radix-ui/react-focus-scope@1.2.0 — MIT
+  runtime/licenses/radix-ui__react-focus-scope-1.2.0-LICENSE
+@radix-ui/react-id@1.1.4 — MIT
+  runtime/licenses/radix-ui__react-id-1.1.4-LICENSE
+@radix-ui/react-label@2.1.16 — MIT
+  runtime/licenses/radix-ui__react-label-2.1.16-LICENSE
+@radix-ui/react-popper@1.3.8 — MIT
+  runtime/licenses/radix-ui__react-popper-1.3.8-LICENSE
+@radix-ui/react-portal@1.1.18 — MIT
+  runtime/licenses/radix-ui__react-portal-1.1.18-LICENSE
+@radix-ui/react-presence@1.1.11 — MIT
+  runtime/licenses/radix-ui__react-presence-1.1.11-LICENSE
+@radix-ui/react-primitive@2.1.11 — MIT
+  runtime/licenses/radix-ui__react-primitive-2.1.11-LICENSE
+@radix-ui/react-roving-focus@1.1.20 — MIT
+  runtime/licenses/radix-ui__react-roving-focus-1.1.20-LICENSE
+@radix-ui/react-select@2.3.8 — MIT
+  runtime/licenses/radix-ui__react-select-2.3.8-LICENSE
+@radix-ui/react-separator@1.1.16 — MIT
+  runtime/licenses/radix-ui__react-separator-1.1.16-LICENSE
+@radix-ui/react-slot@1.4.0 — MIT
+  runtime/licenses/radix-ui__react-slot-1.4.0-LICENSE
+@radix-ui/react-tabs@1.1.22 — MIT
+  runtime/licenses/radix-ui__react-tabs-1.1.22-LICENSE
+@radix-ui/react-use-callback-ref@1.1.4 — MIT
+  runtime/licenses/radix-ui__react-use-callback-ref-1.1.4-LICENSE
+@radix-ui/react-use-controllable-state@1.2.6 — MIT
+  runtime/licenses/radix-ui__react-use-controllable-state-1.2.6-LICENSE
+@radix-ui/react-use-effect-event@0.0.5 — MIT
+  runtime/licenses/radix-ui__react-use-effect-event-0.0.5-LICENSE
+@radix-ui/react-use-is-hydrated@0.1.3 — MIT
+  runtime/licenses/radix-ui__react-use-is-hydrated-0.1.3-LICENSE
+@radix-ui/react-use-layout-effect@1.1.4 — MIT
+  runtime/licenses/radix-ui__react-use-layout-effect-1.1.4-LICENSE
+@radix-ui/react-use-previous@1.1.4 — MIT
+  runtime/licenses/radix-ui__react-use-previous-1.1.4-LICENSE
+@radix-ui/react-use-size@1.1.5 — MIT
+  runtime/licenses/radix-ui__react-use-size-1.1.5-LICENSE
+@radix-ui/react-visually-hidden@1.2.12 — MIT
+  runtime/licenses/radix-ui__react-visually-hidden-1.2.12-LICENSE
+ajv-formats@3.0.1 — MIT
+  runtime/licenses/ajv-formats-3.0.1-LICENSE
+ajv@8.20.0 — MIT
+  runtime/licenses/ajv-8.20.0-LICENSE
+aria-hidden@1.2.6 — MIT
+  runtime/licenses/aria-hidden-1.2.6-LICENSE
+class-variance-authority@0.7.1 — Apache-2.0
+  runtime/licenses/class-variance-authority-0.7.1-LICENSE
+clsx@2.1.1 — MIT
+  runtime/licenses/clsx-2.1.1-license
+cn@0.4.0 — MIT
+  runtime/licenses/cn-0.4.0-LICENSE
+fast-deep-equal@3.1.3 — MIT
+  runtime/licenses/fast-deep-equal-3.1.3-LICENSE
+fast-uri@3.1.8 — BSD-3-Clause
+  runtime/licenses/fast-uri-3.1.8-LICENSE
+get-nonce@1.0.1 — MIT
+  runtime/licenses/get-nonce-1.0.1-LICENSE
+json-schema-traverse@1.0.0 — MIT
+  runtime/licenses/json-schema-traverse-1.0.0-LICENSE
+lucide-react@1.52.0 — ISC
+  runtime/licenses/lucide-react-1.52.0-LICENSE
+react-dom@19.3.0 — MIT
+  runtime/licenses/react-dom-19.3.0-LICENSE
+react-remove-scroll-bar@2.3.8 — MIT
+  runtime/licenses/react-remove-scroll-bar-2.3.8-LICENSE
+  runtime/licenses/react-remove-scroll-bar-2.3.8-source.json
+react-remove-scroll@2.7.2 — MIT
+  runtime/licenses/react-remove-scroll-2.7.2-LICENSE
+react-style-singleton@2.2.3 — MIT
+  runtime/licenses/react-style-singleton-2.2.3-LICENSE
+react@19.3.0 — MIT
+  runtime/licenses/react-19.3.0-LICENSE
+scheduler@0.28.0 — MIT
+  runtime/licenses/scheduler-0.28.0-LICENSE
+shadcn@4.21.3 — MIT
+  runtime/licenses/shadcn-4.21.3-LICENSE.md
+tailwindcss@4.3.3 — MIT
+  runtime/licenses/tailwindcss-4.3.3-LICENSE
+tslib@2.8.1 — 0BSD
+  runtime/licenses/tslib-2.8.1-LICENSE.txt
+tw-animate-css@1.4.0 — MIT
+  runtime/licenses/tw-animate-css-1.4.0-LICENSE
+use-callback-ref@1.3.3 — MIT
+  runtime/licenses/use-callback-ref-1.3.3-LICENSE
+use-sidecar@1.1.3 — MIT
+  runtime/licenses/use-sidecar-1.1.3-LICENSE
+yaml@2.9.1 — ISC
+  runtime/licenses/yaml-2.9.1-LICENSE
+
+react-remove-scroll-bar@2.3.8 declares MIT but its npm tarball omits LICENSE. Its declared npm gitHead is unavailable upstream; the actual official repository MIT text is pinned and preserved with commit/checksum in runtime/licenses/react-remove-scroll-bar-2.3.8-source.json. This does not claim release-commit correspondence.
+
+Offline OpenAPI schema resources and adapted structural schema: Apache-2.0.
+See runtime/schemas/vendor/openapi/LICENSE and README.md for pinned source, checksums and modifications.

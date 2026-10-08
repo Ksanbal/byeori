@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:byeori:review-submission:1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "submission_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+    },
+    "project_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+    },
+    "workspace_fingerprint": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "change_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+    },
+    "round": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "manifest_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "decision": {
+            "enum": [
+              "approve",
+              "request_changes",
+              "pending"
+            ]
+          },
+          "comments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+                },
+                "kind": {
+                  "enum": [
+                    "change_request",
+                    "question",
+                    "note"
+                  ]
+                },
+                "body": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "blocking": {
+                  "type": "boolean"
+                },
+                "target": {
+                  "type": "object",
+                  "properties": {
+                    "object_id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "element_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "field": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "operation_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "minLength": 1
+                    },
+                    "pointer": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "object_id",
+                    "element_id",
+                    "field",
+                    "operation_id",
+                    "pointer"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "id",
+                "kind",
+                "body",
+                "blocking",
+                "target"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 0
+          }
+        },
+        "required": [
+          "item_id",
+          "decision",
+          "comments"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "final_confirmation": {
+      "const": true
+    },
+    "implementation_authorization": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "allowed": {
+              "const": true
+            },
+            "scope_hash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "allowed",
+            "scope_hash"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "allowed": {
+              "const": false
+            },
+            "scope_hash": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "allowed",
+            "scope_hash"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "expected_feedback_version": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "submission_id",
+    "project_id",
+    "workspace_fingerprint",
+    "change_id",
+    "round",
+    "manifest_hash",
+    "items",
+    "final_confirmation",
+    "implementation_authorization",
+    "expected_feedback_version"
+  ],
+  "additionalProperties": false
+}

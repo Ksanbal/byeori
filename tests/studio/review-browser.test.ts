@@ -16,7 +16,7 @@ import { studioFixture } from './setup';
 
 function barrier() {let release!: () => void; const wait = new Promise<void>(resolve => {release = resolve;}); return {wait, release};}
 
-const screenshots = path.resolve('.delivery/agents/B07-screenshots');
+const screenshots = path.resolve('artifacts/test-screenshots/review');
 async function openReview(page: Page, url: string) {
   await page.goto(url); await page.getByRole('tab', {name: '리뷰', exact: true}).click();
   await expect(page.getByRole('button', {name: '리뷰 제출', exact: true})).toBeEnabled();

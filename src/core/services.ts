@@ -1,3 +1,4 @@
+import { RUNTIME_VERSION } from '../version';
 import type { CoreApi, HumanReviewApi, Result } from '../contracts';
 import { CoreError } from './errors';
 import { apply, recover, type ApplyDependencies } from './apply';
@@ -7,7 +8,7 @@ import { createChange, deleteDraft, initializeWorkspace, moveDraft, putDraft, up
 import { VERSIONS } from './yaml';
 
 export async function result<T>(action: () => Promise<T>): Promise<Result<T>> {
-  const meta = { ...VERSIONS, runtime_version: '0.1.0' };
+  const meta = { ...VERSIONS, runtime_version: RUNTIME_VERSION };
   try { return { ok: true, data: await action(), diagnostics: [], meta }; }
   catch (error) { const diagnostics = error instanceof CoreError ? error.diagnostics : [{ code: 'UNEXPECTED' as const, severity: 'error' as const, path: null, object_id: null, field: null, message: error instanceof Error ? error.message : 'Unexpected Core error.', suggested_action: 'Inspect the operation and retry only after resolving the reported failure.' }]; return { ok: false, data: null, diagnostics, meta }; }
 }

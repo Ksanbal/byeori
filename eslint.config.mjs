@@ -6,7 +6,7 @@ import globals from 'globals';
 import { plugin as shadcn } from '@shadcn/lint';
 
 export default defineConfig([
-  globalIgnores(['dist/**', 'node_modules/**', '.inputs/**', '.delivery/**', '.byeori/**']),
+  globalIgnores(['dist/**', 'plugins/byeori-claude/runtime/**', 'plugins/byeori-codex/runtime/**', 'artifacts/**', 'node_modules/**', '.inputs/**', '.delivery/**', '.byeori/**']),
   { files: ['**/*.{js,mjs,ts,tsx}'], extends: [js.configs.recommended], languageOptions: { globals: globals.node } },
   { files: ['**/*.{ts,tsx}'], extends: [tseslint.configs.recommended] },
   {

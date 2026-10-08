@@ -1,0 +1,19 @@
+{
+  "name": "byeori",
+  "version": "0.1.0",
+  "description": "Human-reviewed planning for AI development.",
+  "author": {
+    "name": "Ksanbal"
+  },
+  "license": "MIT",
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "extensions": {
+    "com.openai": {
+      "hooks": "./hooks/hooks.json",
+      "interface": {
+        "displayName": "Byeori · 벼리",
+        "shortDescription": "Human-reviewed planning"
+      }
+    }
+  }
+}

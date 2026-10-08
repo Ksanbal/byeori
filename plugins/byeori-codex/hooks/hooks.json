@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${PLUGIN_ROOT}/runtime/hook.mjs\" codex || { printf \"%s\\n\" \"Byeori hook failed; operation blocked. Check Node 24 and doctor.\" >&2; exit 2; }",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${PLUGIN_ROOT}/runtime/hook.mjs\" codex || { printf \"%s\\n\" \"Byeori resume unavailable. Read AGENTS.md and planning/workflow.yaml; run doctor and status before editing.\"; exit 0; }",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

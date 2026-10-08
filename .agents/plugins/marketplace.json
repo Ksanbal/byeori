@@ -1,0 +1,17 @@
+{
+  "name": "byeori-plugins",
+  "plugins": [
+    {
+      "name": "byeori",
+      "source": {
+        "source": "local",
+        "path": "./plugins/byeori-codex"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
