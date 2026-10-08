@@ -1,0 +1,10 @@
+.inputs/
+.delivery/
+.worktrees/
+node_modules/
+dist/
+artifacts/
+.DS_Store
+*.log
+AGENTS.md
+CLAUDE.md
