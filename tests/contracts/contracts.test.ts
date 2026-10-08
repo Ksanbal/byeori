@@ -83,7 +83,14 @@ test('continuity and CLI represent required wire fields without an agent approva
   for (const field of ['project_id', 'workspace_fingerprint', 'source_integrity', 'workflow', 'active_change', 'current_round', 'manifest_hash', 'pending_submissions', 'processed_comment_ids', 'apply_state', 'implementation_authorization']) assert.ok(field in status);
   assert.ok('focus' in status.workflow && 'next_action' in status.workflow && 'open_questions' in status.workflow);
   assert.equal(DOCUMENT_KINDS.length, 9);
-  assert.equal(CLI_COMMANDS.length, 19);
-  assert.equal(CLI_COMMANDS.some(command => command.includes('approve')), false);
+  const requiredCommands = [
+    'init', 'doctor', 'status', 'search', 'get', 'impact', 'history',
+    'change create', 'change put', 'change cancel', 'change update', 'change delete', 'change move',
+    'workflow write', 'review prepare', 'review results', 'review respond', 'lint', 'apply', 'recover',
+    'gate check', 'index rebuild', 'studio',
+  ] as const;
+  for (const command of requiredCommands) assert.ok(CLI_COMMANDS.includes(command), 'Missing agent command: ' + command);
+  assert.equal(new Set(CLI_COMMANDS).size, CLI_COMMANDS.length, 'Agent commands must be unique');
+  assert.equal(CLI_COMMANDS.some(command => /approve|submit|advisory/i.test(command)), false, 'Human review and advisory choices must not be agent commands');
   assert.equal(DIAGNOSTIC_EXIT_CODES.APPLY_RECOVERY_REQUIRED, 5);
 });
