@@ -18,7 +18,7 @@ export async function studio(root: string, action: 'start' | 'status' | 'stop', 
     const worker = new URL(development ? '../server/worker.ts' : './worker.mjs', import.meta.url);
     const assetsRoot = options.assetsRoot ? path.resolve(options.assetsRoot) : fileURLToPath(new URL(development ? '../../dist/' : './studio/', import.meta.url));
     const response = await new Promise<Result<StudioRuntime>>((resolve, rejectLaunch) => {
-      const child = fork(worker, [], { detached: true, execArgv: development ? ['--import', 'tsx'] : [], stdio: ['ignore', 'ignore', 'ignore', 'ipc'] });
+      const child = fork(worker, [], { detached: true, execArgv: development ? ['--import', import.meta.resolve('tsx')] : [], stdio: ['ignore', 'ignore', 'ignore', 'ipc'] });
       let settled = false;
       const finish = (value?: Result<StudioRuntime>, error?: Error) => { if (settled) return; settled = true; clearTimeout(timer); child.unref(); if (child.connected) child.disconnect(); if (error) rejectLaunch(error); else resolve(value!); };
       const timer = setTimeout(() => { try { reject('CAPABILITY_UNAVAILABLE', 'Studio readiness timed out; inspect Studio before retrying launch.'); } catch (error) { finish(undefined, error as Error); } }, 15000);
