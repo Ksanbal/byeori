@@ -1,5 +1,14 @@
 # Verification and support status
 
+## 0.1.0-rc.3: native question-hook fix
+
+Validated Claude `AskUserQuestion` and Codex `request_user_input` / `request_user_input_async` calls now pass the protection hook without being classified as unknown operations. Only exact host-specific tool names and known question fields qualify. Success emits empty output, leaving native permissions, tool availability and mode restrictions in charge; it does not record an answer or authorize implementation.
+
+The Node 24.13.0/pnpm 12.10.1 full check passes 142 tests plus a separate 11-probe UI policy run that repeats policy cases. Regression tests exercise shared skill examples, asynchronous free text/choices, optional Claude previews, invalid and mixed payloads, lookalike tools, both generated hook bundles, writer-lock independence and unchanged host/workflow authorization. Sensitive reads, implementation writes and shell side effects remain gated. The change received independent source review. See [CI](https://github.com/Ksanbal/byeori/actions/workflows/ci.yml) and this release's `VERIFICATION.md` for exact remote checks and distribution evidence.
+
+The shared interview protocol preserves pending/partial answers, cancellation and fallback subject to the live host's rules. Native question UI rendering and authenticated execution were not exercised for rc.3: doing so with the current desktop session would require replacing its installed plugin or changing hook trust, outside this publication's scope. Restart and inspect the loaded version before resuming an interview after a channel update; an active session does not hot-reload the fix. No installed plugin, project protection mode or hook trust is modified by publication.
+
+
 ## 0.1.0-rc.2: interview and read-policy fixes
 
 This prerelease adds actual host question-tool guidance, explicit wait/resume and cancellation handling, and a bounded read-only hook path for supported research and document tools. Workflow-write guidance now requires the complete workflow object and typed facts/questions. Implementation authorization, draft-write scope and host trust configuration are unchanged.

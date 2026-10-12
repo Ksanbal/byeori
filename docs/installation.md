@@ -1,6 +1,6 @@
 # Installation, update and removal
 
-**Release status:** The current release is the explicit prerelease `v0.1.0-rc.2`. Download the plugin ZIP or consumer tarball from [GitHub Releases](https://github.com/Ksanbal/byeori/releases); verify current asset digests and host limits in [Verification](verification.md).
+**Release status:** The current release is the explicit prerelease `v0.1.0-rc.3`. Download the plugin ZIP or consumer tarball from [GitHub Releases](https://github.com/Ksanbal/byeori/releases); verify current asset digests and host limits in [Verification](verification.md).
 
 Read [Verification](verification.md) for the latest Claude and Codex host-test evidence. A local install or hook discovery alone does not establish active enforcement.
 
@@ -28,7 +28,7 @@ Check the result before continuing. The runtime reports Node, SQLite/FTS5, schem
 
 ## Host installation
 
-The root catalog is named `byeori-plugins`; its plugin entry is `byeori`. Use these marketplace commands to install the published `v0.1.0-rc.2` release. The earlier rc.1 marketplace installation was verified; current release evidence and native-host limits are separated in [Verification](verification.md).
+The root catalog is named `byeori-plugins`; its plugin entry is `byeori`. Use these marketplace commands to install the published `v0.1.0-rc.3` release. The earlier rc.1 marketplace installation was verified; current release evidence and native-host limits are separated in [Verification](verification.md).
 
 Before updating or removing a plugin, close the owning host session and use an independent terminal. Start a fresh host session after the change. An observed Codex uninstall from an active protected chat left hook dispatch pointing at the removed runtime and blocked tools until the plugin was restored. Do not bypass the trust prompt or disable security controls.
 
@@ -37,7 +37,7 @@ Before updating or removing a plugin, close the owning host session and use an i
 From the public repository marketplace:
 
 ```sh
-claude plugin marketplace add 'Ksanbal/byeori#v0.1.0-rc.2' --scope user --json
+claude plugin marketplace add 'Ksanbal/byeori#v0.1.0-rc.3' --scope user --json
 claude plugin install byeori@byeori-plugins --scope user --json
 claude plugin list
 ```
@@ -65,7 +65,7 @@ Use the scope where you actually installed it (`user`, `project` or `local`). Re
 The command names below were observed in `codex-cli 0.161.0 --help`. It supports plugin commands `add`, `list`, `remove`, and marketplace commands `add`, `list`, `upgrade`, `remove` (not `install`/`uninstall`). The earlier rc.1 public marketplace install was verified; see [Verification](verification.md) for version-specific evidence and remaining native-host limits:
 
 ```sh
-codex plugin marketplace add Ksanbal/byeori --ref v0.1.0-rc.2 --json
+codex plugin marketplace add Ksanbal/byeori --ref v0.1.0-rc.3 --json
 codex plugin add byeori@byeori-plugins --json
 codex plugin list
 ```
@@ -84,7 +84,7 @@ Quit Codex and use an independent terminal. Back up `~/.codex/config.toml`, then
 ref = "release"
 ```
 
-Keep all other settings intact; do not add a duplicate section. To stay pinned instead, set `ref = "v0.1.0-rc.2"`. Then explicitly refresh and inspect the installed version:
+Keep all other settings intact; do not add a duplicate section. To stay pinned instead, set `ref = "v0.1.0-rc.3"`. Then explicitly refresh and inspect the installed version:
 
 ```sh
 codex plugin marketplace upgrade byeori-plugins --json
@@ -97,7 +97,7 @@ Start a fresh session after the update. Invoke `$byeori-start` or `$byeori-chang
 
 To return to an older release, change the same `ref` to its immutable tag and run the same closed-session refresh. Do not move published tags or manually patch the installed cache. Updating or rolling back does not rewrite `planning/hosts/codex.yaml` or repair an invalid advisory record. Project protection and trust changes require separate decisions.
 
-Maintainers update the channel only after the published tag passes verification; see [Release promotion](releasing.md). The initial channel commit is the verified `v0.1.0-rc.2` release.
+Maintainers update the channel only after the published tag passes verification; see [Release promotion](releasing.md). The initial channel commit was the verified `v0.1.0-rc.2` release.
 
 To uninstall the plugin and then remove its marketplace:
 

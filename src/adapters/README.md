@@ -8,6 +8,7 @@ CLI init preflights both managed instruction files, initializes Core planning/ig
 
 | Input path | Supported bounded behavior |
 | --- | --- |
+| Claude `AskUserQuestion`; Codex `request_user_input` / `request_user_input_async` | Exact host-specific names and validated question-only input; empty output leaves native availability/mode/permissions in charge. No answers, observations, locks or implementation approval. Unknown/nested extra fields remain gated. |
 | Claude `Write`/`Edit` | Documented absolute file_path plus required string content/edit fields; checked through Core |
 | Codex canonical `apply_patch` | command envelope, Add/Update/Delete and Move-to paths; every origin/destination checked; malformed instructions deny |
 | `Read`, `Grep`, `Glob` typed inputs | Read paths through Core; no inference from arbitrary tool names |
@@ -42,3 +43,5 @@ The hook recognizes Codex Desktop's exact `webrun` name for validated search/ope
 Typed Read and literal `cat [--] <paths>` accept regular project files and this release's bundled skill Markdown. External arbitrary files, credential/config stores, traversal, symlinks, devices, option operands and shell operators are excluded. Command aliases, cwd overrides and arbitrary shell programs are not inferred safe. In particular, a broad `rg` invocation remains unclassified because configuration/preprocessor options can execute programs; typed search tools retain their existing coverage. A hook denial is a stop/report diagnostic, not an invitation to reroute the same action or select advisory.
 
 `workflow write` and `change put` through the single installed CLI remain the supported pre-review planning writes. They retain their binding/CAS/schema checks. Invalid workflow input is a validation error, not a missing human implementation approval. Direct approved-source/review writes and implementation changes still require their existing gates.
+
+Question schemas follow [Claude user input](https://code.claude.com/docs/en/agent-sdk/user-input), the [Codex synchronous schema](https://github.com/openai/codex/blob/rust-v0.161.0/codex-rs/core/src/tools/handlers/request_user_input_spec.rs), and the exposed Codex app asynchronous contract (checked 2026-10-12). Claude option `preview` text is supported; rendering and preview validation belong to the host. The asynchronous contract allows free-text questions without options. Response/answer payloads and mode overrides are not question requests. The hook never infers approval from successful delivery. See the [interview protocol](../../skills-src/references/interview.md) for waiting, partial answers, cancellation and fallback. Native UI execution is separate from hook-level tests.
