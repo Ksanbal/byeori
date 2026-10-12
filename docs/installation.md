@@ -49,6 +49,8 @@ claude plugin marketplace update byeori-plugins
 claude plugin update byeori@byeori-plugins
 ```
 
+For automatic updates, register a moving branch such as `Ksanbal/byeori#release` instead of a fixed tag, then enable auto-update for `byeori-plugins` in `/plugin` → Marketplaces. Third-party marketplaces default to auto-update off. See the [official update guide](https://code.claude.com/docs/en/discover-plugins#keep-plugins-updated); follow the host reload prompt after an update. Existing fixed-tag sources do not advance by themselves.
+
 To remove the user-scope plugin, then the marketplace:
 
 ```sh
@@ -74,21 +76,28 @@ To refresh the currently configured Git ref (this does **not** change a pinned r
 codex plugin marketplace upgrade byeori-plugins
 ```
 
-To move an existing `v0.1.0-rc.1` installation to `v0.1.0-rc.2` with Codex CLI `0.161.0`, first stop all Byeori-using sessions and quit Codex Desktop. Run the following from an independent OS terminal, one command at a time; stop on any error:
+To follow tested releases, use the `release` branch instead of a fixed version tag. It includes explicit prereleases; it is not a promise of stable/native-host support. For a **new** installation, use `--ref release` in the marketplace-add command above. An existing fixed-tag installation needs a one-time configuration change, not removal/reinstallation.
 
-```sh
-codex plugin remove byeori@byeori-plugins
-codex plugin marketplace remove byeori-plugins
-codex plugin marketplace add Ksanbal/byeori --ref v0.1.0-rc.2 --json
-codex plugin add byeori@byeori-plugins --json
-codex plugin list --json
+Quit Codex and use an independent terminal. Back up `~/.codex/config.toml`, then change only `ref` in its existing `[marketplaces.byeori-plugins]` section:
+
+```toml
+ref = "release"
 ```
 
-This version's [marketplace source matching](https://github.com/openai/codex/blob/rust-v0.161.0/codex-rs/core-plugins/src/marketplace_add/metadata.rs) includes the ref. [Adding a different source/ref under the same name](https://github.com/openai/codex/blob/rust-v0.161.0/codex-rs/core-plugins/src/marketplace_add.rs) is rejected while the prior marketplace remains installed. Do not run this replacement sequence inside an active protected chat. These commands affect only the named plugin/marketplace; project planning records are separate. The sequence is checked against the installed CLI help and official versioned source; an in-place upgrade of a user's live installation is not part of the release tests.
+Keep all other settings intact; do not add a duplicate section. To stay pinned instead, set `ref = "v0.1.0-rc.2"`. Then explicitly refresh and inspect the installed version:
 
-Confirm the reported version is `0.1.0-rc.2`, then relaunch Codex and reopen the same project/conversation. Invoke `$byeori-start` or `$byeori-change` and ask it to recover the saved workflow, active change and unanswered questions before continuing. Do not reinitialize the project or infer approval from conversation history. There is no verified hot-reload promise for the currently running session. Host trust prompts remain the user's decision.
+```sh
+codex plugin marketplace upgrade byeori-plugins --json
+codex plugin list --marketplace byeori-plugins --json
+```
 
-To return to the previous release, use the same closed-session sequence with `--ref v0.1.0-rc.1`; do not overwrite release tags or manually patch the installed cache. Updating or rolling back the plugin does not rewrite `planning/hosts/codex.yaml`. If that project file contains an invalid advisory record, stop and arrange a separately authorized repair; installing this version cannot correct it. Advisory also continues to reject unknown operations.
+Codex 0.161.0's [startup path](https://github.com/openai/codex/blob/rust-v0.161.0/codex-rs/app-server/src/message_processor.rs#L544-L563) starts background Git marketplace upgrades when plugins are enabled. Its [upgrade implementation](https://github.com/openai/codex/blob/rust-v0.161.0/codex-rs/core-plugins/src/manager.rs#L2811-L3019) also refreshes installed plugin caches. This is a startup check, not a guaranteed polling interval or immediate hot reload. Fixed tags remain fixed; GitHub's Latest release label does not select a new Git ref. Network or host-policy failures can leave an update pending. See the official [ref configuration](https://learn.chatgpt.com/docs/config-file/config-reference).
+
+Start a fresh session after the update. Invoke `$byeori-start` or `$byeori-change` to recover saved workflow, active change and unanswered questions before continuing. Do not reinitialize the project or infer approval from conversation history. Changed hook definitions may need a new trust review; downloading a plugin does not grant that trust. See [Codex plugin loading](https://learn.chatgpt.com/docs/plugins) and [hook trust](https://learn.chatgpt.com/docs/hooks#review-and-trust-hooks).
+
+To return to an older release, change the same `ref` to its immutable tag and run the same closed-session refresh. Do not move published tags or manually patch the installed cache. Updating or rolling back does not rewrite `planning/hosts/codex.yaml` or repair an invalid advisory record. Project protection and trust changes require separate decisions.
+
+Maintainers update the channel only after the published tag passes verification; see [Release promotion](releasing.md). The initial channel commit is the verified `v0.1.0-rc.2` release.
 
 To uninstall the plugin and then remove its marketplace:
 

@@ -29,3 +29,5 @@ Useful narrower commands are `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm b
 - Preserve the MIT license and bundled third-party notices.
 
 Run documentation examples only against a disposable project unless an example explicitly says it writes a selected workspace. Report the exact command and scope when proposing a change. Public issue and pull request availability is pending repository publication.
+
+Release maintainers: follow [Release promotion](docs/releasing.md) after publishing and verifying a version tag.

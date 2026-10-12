@@ -16,7 +16,7 @@ See [the product model](docs/product-model.md), [architecture](docs/architecture
 
 ## Four-step workflow
 
-1. **Install the host plugin.** Follow the verified release commands in [Installation](docs/installation.md).
+1. **Install the host plugin.** Follow [Installation](docs/installation.md) to pin a version or follow the tested `release` channel (including prereleases).
 2. **Initialize a selected project.** From an extracted release or installed plugin, resolve its `runtime/cli.mjs` and run:
 
    ```sh
