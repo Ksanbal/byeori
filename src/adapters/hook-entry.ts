@@ -10,6 +10,7 @@ import { PROFILE } from '../core/yaml';
 import { normalizeTool, parseHookInput } from './normalize';
 import { issueGateReceipt, observeHook } from './probe';
 import { literalGate } from './ticket';
+import { isReadOnlyTool } from './read-only';
 
 export interface HookResponse { exit: 0 | 2; stdout: string; stderr: string }
 const deny = (reason: string): HookResponse => ({ exit: 0, stdout: JSON.stringify({ hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: reason } }) + '\n', stderr: '' });
@@ -30,6 +31,9 @@ export async function handleHook(host: HostId, raw: string): Promise<HookRespons
     }
     if (root === null) return { exit: 0, stdout: '', stderr: '' };
     const [major, minor] = process.versions.node.split('.').map(Number); if (major !== 24 || minor < 13) throw new Error('Byeori requires Node 24.13.0 or newer Node 24.');
+    // Reads neither need implementation approval nor mutate host observations/acquire writer locks.
+    // Empty output defers to the host's own permissions; it is not permissionDecision: allow.
+    if (!sessionStart && await isReadOnlyTool(root, host, input, canonicalCwd)) return { exit: 0, stdout: '', stderr: '' };
     await observeHook(root, host, input.hook_event_name, input.session_id);
     if (sessionStart) {
       const state = await status(root);

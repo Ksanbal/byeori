@@ -1,6 +1,6 @@
 # Roles and permissions
 
-Load this guide only for a relevant actor decision. Ask a few focused questions, reuse durable answers, and label facts/assumptions/open questions rather than filling unanswered user decisions.
+Load this guide only for a relevant actor decision. Follow the [interview protocol](../interview.md) to call the available question tool and wait for explicit answers. Ask a few focused questions, reuse durable answers, and label facts/assumptions/open questions rather than filling unanswered user decisions.
 
 Who performs this action, and which records may they access? Which action must this role never perform?
 

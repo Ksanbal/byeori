@@ -2,7 +2,7 @@
 
 Byeori keeps product planning in reviewable files beside a project. An AI assistant can help draft and search the plans; a person reviews a frozen snapshot in the local Studio before planning is applied. Any implementation work still needs its own explicit path scope and authorization.
 
-**Status:** The current release is prerelease `0.1.0-rc.1`, not stable. See [GitHub Releases](https://github.com/Ksanbal/byeori/releases) for assets and [GitHub Actions](https://github.com/Ksanbal/byeori/actions/workflows/ci.yml) for CI. Claude authenticated model use remains unverified; Codex hook trust is unanswered, so active enforcement is not established. See [Verification](docs/verification.md) for the evidence and remaining limits.
+**Status:** The current release is prerelease `0.1.0-rc.2`, not stable. See [GitHub Releases](https://github.com/Ksanbal/byeori/releases) for assets and [GitHub Actions](https://github.com/Ksanbal/byeori/actions/workflows/ci.yml) for CI. Claude authenticated model use remains unverified; Codex native trust and active enforcement require separate validation. See [Verification](docs/verification.md) for the evidence and remaining limits.
 
 ## What it does
 

@@ -1,6 +1,6 @@
 # Data shape and invariants
 
-Load this guide only for a relevant entity decision. Ask a few focused questions, reuse durable answers, and label facts/assumptions/open questions rather than filling unanswered user decisions.
+Load this guide only for a relevant entity decision. Follow the [interview protocol](../interview.md) to call the available question tool and wait for explicit answers. Ask a few focused questions, reuse durable answers, and label facts/assumptions/open questions rather than filling unanswered user decisions.
 
 Which fields and keys make the record identifiable? Which nullability, retention or uniqueness rule is confirmed?
 

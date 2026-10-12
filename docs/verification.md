@@ -1,6 +1,16 @@
 # Verification and support status
 
-Release snapshot: 2026-10-08. The published `v0.1.0-rc.1` is an explicit prerelease, not a stable release. See [GitHub Releases](https://github.com/Ksanbal/byeori/releases/tag/v0.1.0-rc.1) and the [CI run](https://github.com/Ksanbal/byeori/actions/runs/37764471600) for the current artifacts and checks. This page separates verified distribution and consumer behavior from native behavior that remains unverified.
+## 0.1.0-rc.2: interview and read-policy fixes
+
+This prerelease adds actual host question-tool guidance, explicit wait/resume and cancellation handling, and a bounded read-only hook path for supported research and document tools. Workflow-write guidance now requires the complete workflow object and typed facts/questions. Implementation authorization, draft-write scope and host trust configuration are unchanged.
+
+The local Node 24.13.0/pnpm 12.10.1 check passes 134 tests, including policy cases, plus a separate 11-probe UI policy run that repeats those cases. Both generated host bundles and all 272 payload hashes are verified. The read-policy change received independent source review and six focused regression checks. See [CI](https://github.com/Ksanbal/byeori/actions/workflows/ci.yml) and the release's `VERIFICATION.md` for the exact commit, completed remote checks and artifact verification.
+
+Native model question UI, current-session hot reload, authenticated Claude execution, and active host trust are not established by these tests. General shell searches and arbitrary MCP/UI tools remain outside the new read-only classification. An invalid advisory record is not migrated by an update; stop and handle that project-specific repair separately. Advisory is not a workaround for unknown operations. No user project, installed plugin or global permission setting is changed by publishing this release.
+
+## 0.1.0-rc.1 historical evidence
+
+Historical release snapshot: 2026-10-08. The earlier `v0.1.0-rc.1` is an explicit prerelease, not a stable release. See [GitHub Releases](https://github.com/Ksanbal/byeori/releases/tag/v0.1.0-rc.1) and the [CI run](https://github.com/Ksanbal/byeori/actions/runs/37764471600) for that release's artifacts and checks. This page separates verified distribution and consumer behavior from native behavior that remains unverified.
 
 ## Runtime and host support
 

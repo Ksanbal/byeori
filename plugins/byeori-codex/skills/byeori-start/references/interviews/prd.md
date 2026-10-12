@@ -1,6 +1,6 @@
 # Product purpose and version scope
 
-Load this guide only for a relevant prd decision. Ask a few focused questions, reuse durable answers, and label facts/assumptions/open questions rather than filling unanswered user decisions.
+Load this guide only for a relevant prd decision. Follow the [interview protocol](../interview.md) to call the available question tool and wait for explicit answers. Ask a few focused questions, reuse durable answers, and label facts/assumptions/open questions rather than filling unanswered user decisions.
 
 What problem and outcome define this version? Which capabilities are explicitly outside it?
 

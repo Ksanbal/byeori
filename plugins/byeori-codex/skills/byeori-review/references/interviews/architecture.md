@@ -1,6 +1,6 @@
 # System boundaries and decisions
 
-Load this guide only for a relevant architecture decision. Ask a few focused questions, reuse durable answers, and label facts/assumptions/open questions rather than filling unanswered user decisions.
+Load this guide only for a relevant architecture decision. Follow the [interview protocol](../interview.md) to call the available question tool and wait for explicit answers. Ask a few focused questions, reuse durable answers, and label facts/assumptions/open questions rather than filling unanswered user decisions.
 
 Which components own each responsibility? Which confirmed constraint drives the connection or technology decision?
 

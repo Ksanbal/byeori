@@ -1,6 +1,6 @@
 # Feature rules and acceptance
 
-Load this guide only for a relevant feature decision. Ask a few focused questions, reuse durable answers, and label facts/assumptions/open questions rather than filling unanswered user decisions.
+Load this guide only for a relevant feature decision. Follow the [interview protocol](../interview.md) to call the available question tool and wait for explicit answers. Ask a few focused questions, reuse durable answers, and label facts/assumptions/open questions rather than filling unanswered user decisions.
 
 What rule distinguishes valid from invalid behavior? What given/when/then example would prove the outcome?
 

@@ -3,6 +3,8 @@ name: "byeori-review"
 description: Prepare a frozen planning review or process the user's durable submitted feedback without inferring approval from conversation.
 ---
 
+For missing user decisions, follow the [interview protocol](references/interview.md): call the available host question tool, wait for an explicit answer, and preserve unresolved questions on pause or fallback. Never infer approval from an interview answer.
+
 Resolve the installed CLI via [commands](references/commands.md), then read [continuity](references/continuity.md). Inspect status, current change CAS from history and current round/results. If no prepared round exists, lint the complete projected source and review prepare; do not freeze a duplicate round merely because conversation context was lost.
 
 Start Studio and give the user its token-free loopback URL with the frozen change/deletion/implementation-scope summary. The user saves decisions/comments and explicitly submits in Studio. Saving alone does not approve. End the turn while waiting; no polling or automatic wakeup promise. Treat “review complete” as a cue to read status and review results, not as a decision or permission.

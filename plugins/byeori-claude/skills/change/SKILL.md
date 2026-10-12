@@ -3,6 +3,8 @@ name: "change"
 description: Investigate a requested planning or implementation change against approved documents and propose a scoped reviewable change.
 ---
 
+For missing user decisions, follow the [interview protocol](references/interview.md): call the available host question tool, wait for an explicit answer, and preserve unresolved questions on pause or fallback. Never infer approval from an interview answer.
+
 Resolve the installed CLI via [commands](references/commands.md), then follow [continuity](references/continuity.md). Convert the user's request into bounded search queries in approved scope, get candidate documents and provenance, and inspect explicit owned/inverse impact plus relevant code read-only. Expand queries when useful, but do not equate BM25 with confidence or resolve an ambiguous request by choosing a nearby feature. Load only the relevant interview guide from the start skill's shared references.
 
 Decide whether planning changes are needed. A spec_change states the request/reason and affected IDs and puts all necessary related YAML edits into the active draft. If approved planning already covers the requested implementation, an implementation_only change still needs a reason, related approved object IDs, exact file/directory allowlist and validation plan. Do not alter source to justify code already written. Review implementation scope explicitly even when documents do not change.

@@ -1,6 +1,6 @@
 # User sequence and outcomes
 
-Load this guide only for a relevant scenario decision. Ask a few focused questions, reuse durable answers, and label facts/assumptions/open questions rather than filling unanswered user decisions.
+Load this guide only for a relevant scenario decision. Follow the [interview protocol](../interview.md) to call the available question tool and wait for explicit answers. Ask a few focused questions, reuse durable answers, and label facts/assumptions/open questions rather than filling unanswered user decisions.
 
 What starts the sequence and what observable outcome ends it? What changes when a prerequisite fails?
 

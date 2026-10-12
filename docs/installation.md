@@ -1,6 +1,6 @@
 # Installation, update and removal
 
-**Release status:** The current release is the explicit prerelease `v0.1.0-rc.1`. Download the plugin ZIP or consumer tarball from [GitHub Releases](https://github.com/Ksanbal/byeori/releases); verify current asset digests and host limits in [Verification](verification.md).
+**Release status:** The current release is the explicit prerelease `v0.1.0-rc.2`. Download the plugin ZIP or consumer tarball from [GitHub Releases](https://github.com/Ksanbal/byeori/releases); verify current asset digests and host limits in [Verification](verification.md).
 
 Read [Verification](verification.md) for the latest Claude and Codex host-test evidence. A local install or hook discovery alone does not establish active enforcement.
 
@@ -28,7 +28,7 @@ Check the result before continuing. The runtime reports Node, SQLite/FTS5, schem
 
 ## Host installation
 
-The root catalog is named `byeori-plugins`; its plugin entry is `byeori`. Use these marketplace commands to install the published `v0.1.0-rc.1` release. Public marketplace installation was verified; native host behavior and limits are in [Verification](verification.md).
+The root catalog is named `byeori-plugins`; its plugin entry is `byeori`. Use these marketplace commands to install the published `v0.1.0-rc.2` release. The earlier rc.1 marketplace installation was verified; current release evidence and native-host limits are separated in [Verification](verification.md).
 
 Before updating or removing a plugin, close the owning host session and use an independent terminal. Start a fresh host session after the change. An observed Codex uninstall from an active protected chat left hook dispatch pointing at the removed runtime and blocked tools until the plugin was restored. Do not bypass the trust prompt or disable security controls.
 
@@ -37,7 +37,7 @@ Before updating or removing a plugin, close the owning host session and use an i
 From the public repository marketplace:
 
 ```sh
-claude plugin marketplace add 'Ksanbal/byeori#v0.1.0-rc.1' --scope user --json
+claude plugin marketplace add 'Ksanbal/byeori#v0.1.0-rc.2' --scope user --json
 claude plugin install byeori@byeori-plugins --scope user --json
 claude plugin list
 ```
@@ -60,19 +60,35 @@ Use the scope where you actually installed it (`user`, `project` or `local`). Re
 
 ### Codex CLI
 
-The command names below were observed in `codex-cli 0.161.0 --help`. It supports plugin commands `add`, `list`, `remove`, and marketplace commands `add`, `list`, `upgrade`, `remove` (not `install`/`uninstall`). The public marketplace install is verified; see [Verification](verification.md) for remaining native-host limits:
+The command names below were observed in `codex-cli 0.161.0 --help`. It supports plugin commands `add`, `list`, `remove`, and marketplace commands `add`, `list`, `upgrade`, `remove` (not `install`/`uninstall`). The earlier rc.1 public marketplace install was verified; see [Verification](verification.md) for version-specific evidence and remaining native-host limits:
 
 ```sh
-codex plugin marketplace add Ksanbal/byeori --ref v0.1.0-rc.1 --json
+codex plugin marketplace add Ksanbal/byeori --ref v0.1.0-rc.2 --json
 codex plugin add byeori@byeori-plugins --json
 codex plugin list
 ```
 
-To refresh the Git marketplace:
+To refresh the currently configured Git ref (this does **not** change a pinned release tag):
 
 ```sh
 codex plugin marketplace upgrade byeori-plugins
 ```
+
+To move an existing `v0.1.0-rc.1` installation to `v0.1.0-rc.2` with Codex CLI `0.161.0`, first stop all Byeori-using sessions and quit Codex Desktop. Run the following from an independent OS terminal, one command at a time; stop on any error:
+
+```sh
+codex plugin remove byeori@byeori-plugins
+codex plugin marketplace remove byeori-plugins
+codex plugin marketplace add Ksanbal/byeori --ref v0.1.0-rc.2 --json
+codex plugin add byeori@byeori-plugins --json
+codex plugin list --json
+```
+
+This version's [marketplace source matching](https://github.com/openai/codex/blob/rust-v0.161.0/codex-rs/core-plugins/src/marketplace_add/metadata.rs) includes the ref. [Adding a different source/ref under the same name](https://github.com/openai/codex/blob/rust-v0.161.0/codex-rs/core-plugins/src/marketplace_add.rs) is rejected while the prior marketplace remains installed. Do not run this replacement sequence inside an active protected chat. These commands affect only the named plugin/marketplace; project planning records are separate. The sequence is checked against the installed CLI help and official versioned source; an in-place upgrade of a user's live installation is not part of the release tests.
+
+Confirm the reported version is `0.1.0-rc.2`, then relaunch Codex and reopen the same project/conversation. Invoke `$byeori-start` or `$byeori-change` and ask it to recover the saved workflow, active change and unanswered questions before continuing. Do not reinitialize the project or infer approval from conversation history. There is no verified hot-reload promise for the currently running session. Host trust prompts remain the user's decision.
+
+To return to the previous release, use the same closed-session sequence with `--ref v0.1.0-rc.1`; do not overwrite release tags or manually patch the installed cache. Updating or rolling back the plugin does not rewrite `planning/hosts/codex.yaml`. If that project file contains an invalid advisory record, stop and arrange a separately authorized repair; installing this version cannot correct it. Advisory also continues to reject unknown operations.
 
 To uninstall the plugin and then remove its marketplace:
 

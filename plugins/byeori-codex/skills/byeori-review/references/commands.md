@@ -27,6 +27,8 @@ The JSON recipes below describe actual argv and request objects, not a separate 
 ```json recipe=impact-approved
 {"command":["impact"],"args":["--id","$object_id","--scope","approved","--depth","1","--limit","25"]}
 ```
+For workflow write, start with the complete `status.data.workflow` object, copy it, and modify only the intended fields. Set `expected_version` to that same object's `version`; retain `schema_version`, `project_id`, `version`, `updated_at`, focus, feedback_progress and correction_attempts. `facts` and `assumptions` are arrays of `{ "id": "stable-id", "text": "confirmed or explicitly assumed context" }`, not string arrays. `open_questions` entries are `{ "id": "stable-id", "text": "question", "blocking": true }`. On CONFLICT, reload status and merge; on VALIDATION_FAILED, correct the reported shape. Neither diagnostic asks for advisory mode or grants permission to bypass the hook. Workflow and change drafts can be saved before human review; approved source and implementation remain protected. A literal single installed-CLI invocation is distinct from an arbitrary shell write.
+
 ```json recipe=workflow-write
 {"command":["workflow","write"],"input":{"project_id":"$project_id","workspace_fingerprint":"$workspace_fingerprint","expected_version":"$workflow_version","workflow":"$workflow"}}
 ```

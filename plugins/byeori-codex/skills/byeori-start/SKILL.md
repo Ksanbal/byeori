@@ -3,6 +3,8 @@ name: "byeori-start"
 description: Interview the user and draft or resume a project's planning documents before human review.
 ---
 
+For missing user decisions, follow the [interview protocol](references/interview.md): call the available host question tool, wait for an explicit answer, and preserve unresolved questions on pause or fallback. Never infer approval from an interview answer.
+
 Resolve the installed CLI using [commands](references/commands.md), select the real project/worktree and follow [continuity](references/continuity.md). Read status and the existing workflow before interviewing again. Preserve confirmed facts, labeled assumptions, open questions, focus and next_action with workflow write and its current CAS version; do not invent user decisions or store secrets/full conversations.
 
 Ask a few focused questions that change the next decision. Usually start with [PRD](references/interviews/prd.md), then [actors](references/interviews/actor.md) and [scenarios](references/interviews/scenario.md), [features](references/interviews/feature.md), and an [architecture](references/interviews/architecture.md) draft. Load [IA](references/interviews/ia.md), [screens](references/interviews/screen.md), [entities](references/interviews/entity.md) or [OpenAPI](references/interviews/openapi.md) only when needed. Adjust related documents together; this order is guidance, not a requirement to finish every document before continuing.

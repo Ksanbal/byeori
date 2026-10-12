@@ -1,6 +1,6 @@
 # Navigation and screen hierarchy
 
-Load this guide only for a relevant ia decision. Ask a few focused questions, reuse durable answers, and label facts/assumptions/open questions rather than filling unanswered user decisions.
+Load this guide only for a relevant ia decision. Follow the [interview protocol](../interview.md) to call the available question tool and wait for explicit answers. Ask a few focused questions, reuse durable answers, and label facts/assumptions/open questions rather than filling unanswered user decisions.
 
 Where should a user find the target screen? Which parent relationship or navigation state changes access?
 

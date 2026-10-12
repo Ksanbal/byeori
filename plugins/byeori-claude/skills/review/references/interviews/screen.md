@@ -1,6 +1,6 @@
 # Screen actions and states
 
-Load this guide only for a relevant screen decision. Ask a few focused questions, reuse durable answers, and label facts/assumptions/open questions rather than filling unanswered user decisions.
+Load this guide only for a relevant screen decision. Follow the [interview protocol](../interview.md) to call the available question tool and wait for explicit answers. Ask a few focused questions, reuse durable answers, and label facts/assumptions/open questions rather than filling unanswered user decisions.
 
 Which action moves the user toward the outcome? What does the user see while empty, loading, invalid or denied?
 
