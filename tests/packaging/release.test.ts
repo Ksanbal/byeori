@@ -2,16 +2,14 @@ import assert from 'node:assert/strict';
 import { execFile, spawn } from 'node:child_process';
 import { cp, mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
-import { get as httpGet, type IncomingHttpHeaders } from 'node:http';
 import path from 'node:path';
 import test from 'node:test';
 import { promisify } from 'node:util';
-import type { ContinuityStatus, DoctorResult, Result, StudioRuntime } from '../../src/contracts';
+import type { ContinuityStatus, DoctorResult, Result } from '../../src/contracts';
 import { createChange, currentBinding, putDraft } from '../../src/core/workspace';
 import { prepareReview, roundBinding, saveReviewDraft, submitReview } from '../../src/core/review';
 import { apply } from '../../src/core/apply';
 import { parseDocument } from '../../src/core/documents';
-import { stopOwnedStudio } from '../../src/server';
 import metadata from '../../package.json';
 const execute = promisify(execFile);
 const source = new URL('../../plugins/', import.meta.url);
@@ -23,19 +21,14 @@ async function cli<T>(entry: string, root: string, args: string[], code = 0): Pr
   assert.ok(output.stdout.trim(), 'CLI cannot silently skip symlink entry'); assert.equal(output.stdout.trim().split('\n').length, 1);
   const result = JSON.parse(output.stdout) as Result<T>; assert.equal(result.ok, code === 0, output.stdout); assert.equal(result.meta.runtime_version, metadata.version); return result;
 }
-async function http(url: string, headers: Record<string, string> = {}) {
-  return new Promise<{ status: number; headers: IncomingHttpHeaders; text: string }>((resolve, reject) => {
-    const request = httpGet(url, { headers }, response => { let text = ''; response.setEncoding('utf8'); response.on('data', chunk => text += chunk); response.once('end', () => resolve({ status: response.statusCode!, headers: response.headers, text })); }); request.once('error', reject);
-  });
-}
 async function hook(entry: string, root: string, host: string, event: unknown) {
   return new Promise<{ stdout: string; stderr: string; exit: number | null }>((resolve, reject) => {
     const child = spawn(process.execPath, [entry, host], { cwd: root, env: { ...env, [host === 'claude' ? 'CLAUDE_PLUGIN_ROOT' : 'PLUGIN_ROOT']: path.dirname(path.dirname(entry)) }, stdio: ['pipe', 'pipe', 'pipe'] }); let stdout = '', stderr = '';
     child.stdout.on('data', chunk => stdout += chunk); child.stderr.on('data', chunk => stderr += chunk); child.once('error', reject); child.once('exit', exit => resolve({ stdout, stderr, exit })); child.stdin.end(typeof event === 'string' ? event : JSON.stringify(event));
   });
 }
-test('both real relocated plugin payloads execute schema/FTS5/Studio/hook contracts without developer resolution', async () => {
-  const directory = await mkdtemp(path.join(os.tmpdir(), 'Byeori clean payload 한글 ')); let active: string | null = null;
+test('both real relocated plugin payloads execute schema/FTS5/terminal/hook contracts without developer resolution', async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'Byeori clean payload 한글 '));
   try {
     for (const host of ['claude', 'codex']) {
       const plugin = path.join(directory, host + ' installed plugin'); await cp(new URL('byeori-' + host, source), plugin, { recursive: true });
@@ -55,11 +48,10 @@ test('both real relocated plugin payloads execute schema/FTS5/Studio/hook contra
       const round = await prepareReview(root, { ...binding, change_id: change.change_id, expected_version: change.version }); const body = { ...roundBinding(round), items: round.manifest.items.map(item => ({ item_id: item.item_id, decision: 'approve' as const, comments: [] })), implementation_authorization: { allowed: false as const, scope_hash: null } };
       const saved = await saveReviewDraft(root, { ...body, expected_version: null }); await submitReview(root, { ...body, schema_version: 1, submission_id: 'synthetic-package-' + host, expected_feedback_version: saved.version, final_confirmation: true }); await apply(root, roundBinding(round));
       const search = await cli<{ hits: { id: string }[] }>(entry, root, ['search', '--query', 'FEAT-MSG-001']); assert.ok(search.ok && search.data.hits.some(hit => hit.id === 'FEAT-MSG-001')); await cli(entry, root, ['get', '--id', 'FEAT-MSG-001']); await cli(entry, root, ['impact', '--id', 'FEAT-MSG-001']); await cli(entry, root, ['index', 'rebuild']);
-      const started = await cli<StudioRuntime>(entry, root, ['studio', '--action', 'start']); assert.ok(started.ok && started.data.url); if (!started.ok || !started.data.url) return; active = root;
-      const page = await http(started.data.url, { 'sec-fetch-mode': 'navigate', 'sec-fetch-dest': 'document', 'sec-fetch-site': 'none' }); assert.equal(page.status, 200); const html = page.text; const cookie = page.headers['set-cookie']![0].split(';')[0]; assert.match(html, /<div id="root"/);
-      const assets = [...html.matchAll(/(?:src|href)="([^" ]+\.(?:js|css))"/g)].map(match => match[1]); assert.ok(assets.length >= 2);
-      for (const asset of assets) { const assetResponse = await http(new URL(asset, started.data.url).href, { cookie }); assert.equal(assetResponse.status, 200); assert.ok(assetResponse.text.length > 100); }
-      await cli(entry, root, ['studio', '--action', 'status']); await cli(entry, root, ['studio', '--action', 'stop']); active = null;
+      await cli(entry, root, ['studio', '--action', 'start'], 2);
+      const reviewer = path.join(plugin, 'runtime/review.mjs');
+      const humanHelp = await execute(process.execPath, [reviewer, '--help'], {cwd: root, env}); assert.match(humanHelp.stdout, /human terminal review/);
+      await assert.rejects(execute(process.execPath, [reviewer, '--root', root], {cwd: root, env}), /AUTH_REQUIRED/);
       const event = { session_id: 'synthetic-no-native', cwd: root, hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: path.join(root, 'src/unauthorized.ts'), content: 'No approval' }, tool_use_id: 'synthetic-1' };
       const denied = await hook(path.join(plugin, 'runtime/hook.mjs'), root, host, event); assert.equal(denied.exit, 0); assert.equal(JSON.parse(denied.stdout).hookSpecificOutput.permissionDecision, 'deny');
       const resumed = await hook(path.join(plugin, 'runtime/hook.mjs'), root, host, { session_id: 'synthetic-resume', cwd: root, hook_event_name: 'SessionStart', source: 'compact' }); assert.equal(resumed.exit, 0); assert.match(JSON.parse(resumed.stdout).hookSpecificOutput.additionalContext, /read AGENTS|Read project guidance/);
@@ -69,5 +61,5 @@ test('both real relocated plugin payloads execute schema/FTS5/Studio/hook contra
       assert.ok((await readFile(path.join(root, 'AGENTS.md'), 'utf8')).startsWith('Preserve user instructions')); await assert.rejects(readFile(path.join(root, 'package.json'))); await assert.rejects(readFile(path.join(plugin, 'node_modules/package.json')));
       console.log(JSON.stringify({ host, relocated_runtime: true, schemas: 9, minimum_node: process.version, synthetic_human_fixture: true, native_activation_claim: false, hook_compact_simulation_only: true }));
     }
-  } finally { if (active) await stopOwnedStudio(active); await rm(directory, { recursive: true, force: true }); }
+  } finally { await rm(directory, { recursive: true, force: true }); }
 });

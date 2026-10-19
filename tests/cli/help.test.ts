@@ -20,7 +20,7 @@ test('actual child help outside initialized workspace is bounded JSON and errors
   try {
     const flags = await invoke(['--help', '--json']); const command = await invoke(['help', '--json', '--root', path.join(cwd, 'nonexistent')]); assert.deepEqual(command, flags); assert.ok(flags.ok); if (!flags.ok) return;
     for (const expected of CLI_COMMANDS) assert.ok(flags.data.commands.some(item => item.command === expected), expected);
-    assert.ok(flags.data.commands.find(item => item.command === 'search')!.flags.includes('--query')); assert.ok(flags.data.commands.find(item => item.command === 'studio')!.flags.includes('--action'));
+    assert.ok(flags.data.commands.find(item => item.command === 'search')!.flags.includes('--query')); assert.ok(!flags.data.commands.some(item => item.command === 'studio'));
     const invalid = await invoke(['unrecognized', '--json'], 2); assert.equal(invalid.ok, false); if (!invalid.ok) { assert.match(invalid.diagnostics[0].suggested_action, /byeori --help --json/); assert.ok(!JSON.stringify(invalid).includes('src/')); }
     await invoke(['help', '--unknown', 'x'], 2); await invoke(['--help', '--help'], 2); await invoke(['help', 'extra', '--json'], 2);
     assert.deepEqual(await readdir(cwd), []);

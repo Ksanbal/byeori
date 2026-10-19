@@ -8,7 +8,6 @@ import { CoreError, reject } from '../core/errors';
 import { createReviewCore, result } from '../core/services';
 import { impact, rebuildIndex, search } from '../core/search';
 import { parseYaml, PROFILE } from '../core/yaml';
-import { studio } from './studio';
 import { hookTicket } from '../adapters/ticket';
 import { manageInstructions, preflightInstructions } from '../adapters/managed';
 import { consumeGateReceipt, disableManagedHostObservations, refreshHosts } from '../adapters/probe';
@@ -37,7 +36,6 @@ const simpleHelp = {
   history: '[--id <id>] [--change <id>] [--limit <1..100>] [--cursor <offset>]',
   lint: '[--scope <scope>] [--stage structural|review_ready|implementation_ready]',
   'index rebuild': '[--scope <scope>]',
-  studio: '--action start|status|stop; start only: [--assets <trusted-build-directory>] [--port <0..65535>]',
 } as const;
 function help() {
   return {
@@ -49,7 +47,7 @@ function help() {
     scopes: ['approved', 'change:<id>', 'history', 'history:<id>', 'history:<id>:<round>'],
     document_kinds: DOCUMENT_KINDS,
     input: 'One literal JSON object, maximum 1 MiB and OS argv limits; duplicate/unknown/missing fields fail. Command words precede flags; flags cannot repeat.',
-    authorization: 'Supply binding/CAS from status/review results. CLI has no human approval or advisory submission command.',
+    authorization: 'Supply binding/CAS from status/review results. Agent CLI cannot submit human approval. The user runs the separate runtime/review.mjs directly in their supported terminal.',
     output: 'One Result JSON object on stdout; runtime diagnostics on stderr; diagnostic-specific exit codes.',
   };
 }
@@ -86,7 +84,7 @@ export async function execute(argv: string[]): Promise<Result<unknown>> {
     const allow = (...keys: string[]) => { for (const key of flags.keys()) if (!['--root', '--json', ...keys].includes(key)) reject('VALIDATION_FAILED', 'Unknown flag: ' + key); };
     const requireFlag = (key: string): string => { const value = flags.get(key); if (value === undefined) reject('VALIDATION_FAILED', 'Missing flag: ' + key); return value; };
     if (command === 'help' || !command && flags.has('--help')) { allow('--help'); return help(); }
-    const core: CoreApi = { ...createReviewCore(root), doctor: () => result(() => doctor(root)), lint: input => result(() => lint(root, input)), search: input => result(() => search(root, input)), impact: input => result(() => impact(root, input)), rebuildIndex: input => result(() => rebuildIndex(root, input.scope)), studio: input => studio(root, input.action) };
+    const core: CoreApi = { ...createReviewCore(root), doctor: () => result(() => doctor(root)), lint: input => result(() => lint(root, input)), search: input => result(() => search(root, input)), impact: input => result(() => impact(root, input)), rebuildIndex: input => result(() => rebuildIndex(root, input.scope)) };
     let response: Result<unknown>;
     if (Object.hasOwn(complex, command)) {
       allow('--input', ...(command === 'gate check' ? ['--hook-ticket'] : [])); const [method, required, optional] = complex[command as keyof typeof complex]; const input = jsonInput(requireFlag('--input'), required, optional);
@@ -103,7 +101,6 @@ export async function execute(argv: string[]): Promise<Result<unknown>> {
       case 'history': allow('--id', '--change', '--limit', '--cursor'); response = await core.history({ object_id: flags.get('--id'), change_id: flags.get('--change'), limit: number(flags.get('--limit')), cursor: flags.get('--cursor') }); break;
       case 'lint': { allow('--scope', '--stage'); const stage = flags.get('--stage'); if (stage && !['structural', 'review_ready', 'implementation_ready'].includes(stage)) reject('VALIDATION_FAILED', 'Unknown lint stage.'); response = await core.lint({ scope: scope(flags.get('--scope')), stage: stage as Parameters<CoreApi['lint']>[0]['stage'] }); break; }
       case 'index rebuild': allow('--scope'); response = await core.rebuildIndex({ scope: scope(flags.get('--scope')) }); break;
-      case 'studio': { allow('--action', '--assets', '--port'); const action = requireFlag('--action'); if (!['start', 'status', 'stop'].includes(action)) reject('VALIDATION_FAILED', 'Unknown Studio action.'); if (action !== 'start' && (flags.has('--assets') || flags.has('--port'))) reject('VALIDATION_FAILED', 'Assets/port are launch-only flags.'); response = await studio(root, action as 'start' | 'status' | 'stop', { assetsRoot: flags.get('--assets'), port: number(flags.get('--port')) }); break; }
       default: { const error = new CoreError('VALIDATION_FAILED', 'Unknown command.'); error.diagnostics[0].suggested_action = 'Run byeori --help --json for command and flag usage.'; throw error; }
     }
     // Unwrap once so parsing and real Core failures share the one output envelope.

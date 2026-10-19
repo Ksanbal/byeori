@@ -85,7 +85,7 @@ test('both shipped hooks and real shell CLI execute documented draft/review/appl
       await invoke('review-results', request); await invoke('apply', request); assert.equal((await invoke<ContinuityStatus>('status')).apply_state.state, 'applied');
       const original = await readFile(path.join(repository, 'tests/fixtures/planning/prd.yaml'), 'utf8'); assert.equal(await readFile(path.join(root, 'planning/source/prd.yaml'), 'utf8'), original + '\n# ' + data.replaceAll('\n', '\n# ') + '\n');
       const candidate = shell(cli, ['status', '--root', root, '--json']);
-      for (const command of negatives(candidate, cli)) { const denied = await hook(host, root, command); assert.equal(denied.exit, 0); assert.match(JSON.parse(denied.stdout).hookSpecificOutput.permissionDecisionReason, /SCOPE_DENIED/); }
+      for (const command of negatives(candidate, cli)) { const denied = await hook(host, root, command); assert.equal(denied.exit, 0, JSON.stringify({host, command, ...denied})); assert.match(JSON.parse(denied.stdout).hookSpecificOutput.permissionDecisionReason, /SCOPE_DENIED/); }
       const gateRequest = { ...binding, host, tool: 'file-write', operation: 'implementation_write', paths: ["src/한글 apostrophe' $;().ts"] }; const ticket = randomUUID();
       const gateArgv = ['gate', 'check', '--root', root, '--json', '--hook-ticket', ticket, '--input', JSON.stringify(gateRequest)]; const gateCommand = shell(installedCliPath(), gateArgv);
       for (const override of ['cwd', 'workdir']) assert.equal(await literalGate(root, host, { ...event(root, gateCommand), tool_input: { command: gateCommand, [override]: '/tmp/other' } }), null);

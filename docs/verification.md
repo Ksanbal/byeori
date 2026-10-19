@@ -1,70 +1,13 @@
 # Verification and support status
 
-## 0.1.0-rc.3: native question-hook fix
+The current local refactor removes the review website, server, browser toolchain and assets. It adds a guarded human terminal review transport while preserving Core validation, immutable history, host hooks, WebFetch offset and bounded native question/discovery handling. Version 0.1.0-rc.4 is being published as an explicitly authorized prerelease with the human/native stages below still incomplete.
 
-Validated Claude `AskUserQuestion` and Codex `request_user_input` / `request_user_input_async` calls now pass the protection hook without being classified as unknown operations. Only exact host-specific tool names and known question fields qualify. Success emits empty output, leaving native permissions, tool availability and mode restrictions in charge; it does not record an answer or authorize implementation.
+Prior evidence before this refactor: 145/145 product cases, 11 repeated UI policy cases and 272 public payload files passed. Those are historical counts, not the current terminal-only suite or native acceptance. The removed web-only cases are not relabeled as passing replacements. Current runs must report their actual case/file counts, commands, failures and omissions.
 
-The Node 24.13.0/pnpm 12.10.1 full check passes 142 tests plus a separate 11-probe UI policy run that repeats policy cases. Regression tests exercise shared skill examples, asynchronous free text/choices, optional Claude previews, invalid and mixed payloads, lookalike tools, both generated hook bundles, writer-lock independence and unchanged host/workflow authorization. Sensitive reads, implementation writes and shell side effects remain gated. The change received independent source review. See [CI](https://github.com/Ksanbal/byeori/actions/workflows/ci.yml) and this release's `VERIFICATION.md` for exact remote checks and distribution evidence.
+Required automated checks: deterministic build, lint, TypeScript, Core/path/schema/ownership/recovery tests, terminal judgments/denial/scope/pause-resume, transport guard and agent entry denial, both relocated consumer payloads, archive checksums and a scan for removed web entrypoints/dependencies.
 
-The shared interview protocol preserves pending/partial answers, cancellation and fallback subject to the live host's rules. Native question UI rendering and authenticated execution were not exercised for rc.3: doing so with the current desktop session would require replacing its installed plugin or changing hook trust, outside this publication's scope. Restart and inspect the loaded version before resuming an interview after a channel update; an active session does not hot-reload the fix. No installed plugin, project protection mode or hook trust is modified by publication.
+Required native checks remain distinct for Claude Code and Codex; see [native host verification](native-host-verification.md). Synthetic human I/O/service calls, ordinary CLI checks, process-boundary fixtures and regenerated hooks do not prove actual native tools or a human-operated TTY. Preserve failures and report blocked/not-run stages accurately.
 
+The rc.4 release assets include VERIFICATION.md with the exact commit, CI, artifact hashes and executed commands. See [rc.4 release notes](releases/v0.1.0-rc.4.md). The MacBook Air registration check before publication found no Byeori plugin or byeori-plugins marketplace registered in either default Claude Code or Codex configuration. Earlier isolated test loading must not be reported as an existing installed plugin or native acceptance.
 
-## 0.1.0-rc.2: interview and read-policy fixes
-
-This prerelease adds actual host question-tool guidance, explicit wait/resume and cancellation handling, and a bounded read-only hook path for supported research and document tools. Workflow-write guidance now requires the complete workflow object and typed facts/questions. Implementation authorization, draft-write scope and host trust configuration are unchanged.
-
-The local Node 24.13.0/pnpm 12.10.1 check passes 134 tests, including policy cases, plus a separate 11-probe UI policy run that repeats those cases. Both generated host bundles and all 272 payload hashes are verified. The read-policy change received independent source review and six focused regression checks. See [CI](https://github.com/Ksanbal/byeori/actions/workflows/ci.yml) and the release's `VERIFICATION.md` for the exact commit, completed remote checks and artifact verification.
-
-Native model question UI, current-session hot reload, authenticated Claude execution, and active host trust are not established by these tests. General shell searches and arbitrary MCP/UI tools remain outside the new read-only classification. An invalid advisory record is not migrated by an update; stop and handle that project-specific repair separately. Advisory is not a workaround for unknown operations. No user project, installed plugin or global permission setting is changed by publishing this release.
-
-## 0.1.0-rc.1 historical evidence
-
-Historical release snapshot: 2026-10-08. The earlier `v0.1.0-rc.1` is an explicit prerelease, not a stable release. See [GitHub Releases](https://github.com/Ksanbal/byeori/releases/tag/v0.1.0-rc.1) and the [CI run](https://github.com/Ksanbal/byeori/actions/runs/37764471600) for that release's artifacts and checks. This page separates verified distribution and consumer behavior from native behavior that remains unverified.
-
-## Runtime and host support
-
-| Area | Verified evidence and limits |
-| --- | --- |
-| Consumer runtime | Node `v24.13.0`; packaged CLI and Studio worked without pnpm, build tools, package installation or `node_modules`. |
-| Development | Node `24.13.0`, pnpm `12.10.1`, frozen lockfile. Full local check passed 124 product tests, including policy tests; a separate 11-probe UI policy run repeats policy cases. See recorded checks below. |
-| OS | Native host checks used macOS `27.0.1` (build `26A434`), Darwin kernel `27.0.0`, arm64. Release CI ran on Linux; local build/tests ran on macOS. Linux and Windows native host support were not verified. |
-| Claude Code | Public marketplace install and plugin cache verification passed with Claude Code `2.1.294`, run from a verified temporary binary (not globally installed or added to `PATH`). Plugin-directory and marketplace validators passed without warnings; all 130 installed files matched the release payload. Auth readback was `loggedIn: false` / `authMethod: none`; authenticated model use, native hook activation and compact behavior were not tested. |
-| Codex CLI | Public marketplace install passed with Codex CLI `0.161.0`. All 130 installed files matched the release payload; 42 other plugin entries and seven other marketplace entries were unchanged. TUI listed four skills and discovered both hooks. The human trust decision remains unanswered; active Core-gate enforcement is not claimed. |
-| Remote CI | [Run 37764471600](https://github.com/Ksanbal/byeori/actions/runs/37764471600) passed 124 product tests, including policy tests, plus 11 separate UI policy probes that repeat policy cases. Do not count these as 135 unique tests. The Linux CI artifact and local macOS build archives matched the published assets. |
-
-## Published release and anonymous consumer checks
-
-Public tag `v0.1.0-rc.1` resolves to commit `c0fcae646d2a461c66e8dfa0045fc7f5a978743f`. Four assets were downloaded anonymously and verified:
-
-| Asset | Bytes | SHA-256 |
-| --- | ---: | --- |
-| `byeori-0.1.0-rc.1-plugins.zip` | 1,272,574 | `9825e013eafdd6166a70c387ada10c0a5675bdbdc2e6bba45f626b77cbad190c` |
-| `byeori-0.1.0-rc.1.tgz` | 648,417 | `7c58ada8bc0f0fd2dbc4f2fe349caba51fffae6cff5b74bb1c91a400a6d19140` |
-| `SHA256SUMS` | 184 | `9292bfe25d5ea8c4090e8477f0d9380d38d2a6c41e7602387365e69c04f8af60` |
-| `VERIFICATION.md` | 4,743 | `4f8ebc078ec145d1c248542319c777588802b88494a5a5b72cfb67a4f1dd3316` |
-
-An anonymous checkout verified 431 tracked source files and all 264 shipped payload hashes. Three fresh projects were tested from the single released plugin ZIP (Claude and Codex plugin directories) and tarball, each outside a Git repository and without `package.json` or `node_modules`. With Node `24.13.0` and no pnpm/build install, each passed CLI help, init, doctor, status, search, and Studio start/status/stop. Doctor confirmed SQLite FTS5; Studio served its HTTP assets and stopped cleanly. This verifies packaged consumer behavior, not native model workflows or human approval.
-
-The matching installed skill entrypoints are Claude Code `/byeori:init`, `/byeori:start`, `/byeori:change`, `/byeori:review`, and Codex `$byeori-init`, `$byeori-start`, `$byeori-change`, `$byeori-review`. These names are present in the shipped host payloads. Their real task behavior was not covered by the release consumer smoke test.
-
-## Recorded checks
-
-The full local check completed on 2026-10-08 from 09:59:13.844Z to 10:01:29.657Z, exit 0. It reported 124/124 product tests, including policy tests, plus 11/11 separate UI policy probes that repeat policy cases; do not count these as 135 unique tests. It also passed lint, UI lint, TypeScript checking, deterministic release build and release verification for 264 payload files. It used Node `24.13.0` and pnpm `12.10.1`; the lock hash was `f16ab1b1f72697714a6c312a398808058f99681a08cf30feacbad2f4cf587cf7`.
-
-Claude Code plugin-directory and marketplace validation passed without warnings. Public marketplace installation then succeeded at user scope and readback confirmed its GitHub source, release ref and 130 payload file hashes. The CLI itself ran from a verified private temporary executable, not a global install or PATH change. Auth remained absent; no authenticated model request was made.
-
-Codex public marketplace installation and cache readback passed. The installed plugin was enabled from the GitHub tag, its 130 files matched the release payload, and the other 42 plugin entries and seven marketplace entries matched their pre-install inventory. TUI discovery showed the four skills and `SessionStart`/`PreToolUse` hooks. The host still awaits a human trust decision. A configured or dispatched hook is not evidence that the product's Core gate enforced an operation.
-
-An earlier native `workspace-write` run of `init`, `doctor` and `status` exited `6` (`CAPABILITY_UNAVAILABLE`) when process identity could not be observed. Normal on-request execution was not tested, so that result does not establish behavior in other permission modes.
-
-## Not established
-
-- Codex hook trust approval, successful hook enforcement through the Core gate, per-command escalation results, and actual model-driven skill behavior were not tested. Native product compact/resume behavior was not tested.
-- Claude authenticated model behavior, native hook activation and compact/resume remain unverified because the CLI was signed out.
-- Human approval tests use synthetic fixtures; they do not replace an actual user decision in a real project.
-- Actual LLM interview quality, agent adoption/search expansion, and remote GitHub response-loss recovery have not been verified.
-- Linux and Windows native host support have not been verified. The passing Linux CI run is not native host support evidence.
-- There is an incomplete independent server review. The completed local tests are not a substitute for that review.
-- Development checkpoint fingerprints are not an independent durable backup. The build provides no hosted recovery service or guarantee if the user's project/workspace is lost.
-
-For plugin updates or removal, close the owning host session and use an independent terminal, then relaunch the host session. The observed Codex uninstall inside an active protected chat removed the hook module while that chat kept dispatching to it, blocking tools until the plugin was restored externally. See [Installation](installation.md) for the safe update/remove sequence; do not bypass host trust or disable security controls.
+Local rc.4 candidate verification on the MacBook Air: supported Node24.14.1, pnpm12.10.1, deterministic public build, lint/typecheck, **111/111 tests** (0 failed/cancelled/skipped; file concurrency1), normal 158-file payload/archive readback and clean initialized consumers passed. Normal frozen-lockfile/supply-chain policy checks covered137 entries. Claude Code2.1.303 validated the plugin and marketplace manifests; both bundles reported rc.4, rejected the removed studio command and denied noninteractive human review without project mutation. These are automated/manifest/child-process observations, not positive human TTY or native-host acceptance.

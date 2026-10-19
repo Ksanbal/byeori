@@ -97,15 +97,9 @@ export interface GateResult {
   allowed: boolean; protection: 'enforced' | 'advisory' | 'unavailable';
   checked_paths: RelativePath[]; authorization_manifest_hash: Hash | null;
 }
-export interface StudioState {
-  project: Pick<ProjectConfig, 'project_id' | 'name'>; branch: string | null;
-  status: ContinuityStatus; documents: { id: ObjectId; kind: DocumentKind; title: string; path: RelativePath }[];
-  review: ReviewResults | null;
-}
-export interface StudioRuntime { state: 'running' | 'stopped'; url: string | null; pid: number | null }
 export interface WorkflowWriteRequest extends WorkspaceBinding { expected_version: Hash; workflow: WorkflowRecord }
 
-/** Shared Core surface. CLI/server/adapters delegate here; no alternate state machine. */
+/** Shared Core surface. Agent CLI, human terminal and adapters share this state machine. */
 export interface CoreApi {
   init(input: { root: string; name?: string }): Promise<Result<ProjectConfig>>;
   doctor(): Promise<Result<DoctorResult>>;
@@ -129,11 +123,9 @@ export interface CoreApi {
   recover(input: RecoverRequest): Promise<Result<RecoveryResult>>;
   gateCheck(input: GateRequest): Promise<Result<GateResult>>;
   rebuildIndex(input: { scope?: QueryScope }): Promise<Result<IndexResult>>;
-  studio(input: { action: 'start' | 'status' | 'stop' }): Promise<Result<StudioRuntime>>;
 }
-/** Reachable only from the authenticated human Studio route, never agent CLI/hooks. */
+/** Human terminal transport only; never exposed by the agent CLI/hooks. */
 export interface HumanReviewApi {
-  studioState(): Promise<Result<StudioState>>;
   saveReviewDraft(input: SaveReviewDraftRequest): Promise<Result<ReviewDraft>>;
   submitReview(input: ReviewSubmission): Promise<Result<SubmissionReceipt>>;
   selectAdvisory(input: { host: HostId; reason: string }): Promise<Result<HostCapability>>;
@@ -141,6 +133,6 @@ export interface HumanReviewApi {
 export const CLI_COMMANDS = [
   'init', 'doctor', 'status', 'search', 'get', 'impact', 'history', 'change create', 'change put',
   'change cancel', 'change update', 'change delete', 'change move', 'workflow write', 'review prepare', 'review results', 'review respond', 'lint', 'apply', 'recover',
-  'gate check', 'index rebuild', 'studio', 'host remove',
+  'gate check', 'index rebuild', 'host remove',
 ] as const;
 export type CliCommand = typeof CLI_COMMANDS[number];

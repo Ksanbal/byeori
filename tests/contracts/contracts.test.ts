@@ -87,7 +87,7 @@ test('continuity and CLI represent required wire fields without an agent approva
     'init', 'doctor', 'status', 'search', 'get', 'impact', 'history',
     'change create', 'change put', 'change cancel', 'change update', 'change delete', 'change move',
     'workflow write', 'review prepare', 'review results', 'review respond', 'lint', 'apply', 'recover',
-    'gate check', 'index rebuild', 'studio',
+    'gate check', 'index rebuild',
   ] as const;
   for (const command of requiredCommands) assert.ok(CLI_COMMANDS.includes(command), 'Missing agent command: ' + command);
   assert.equal(new Set(CLI_COMMANDS).size, CLI_COMMANDS.length, 'Agent commands must be unique');

@@ -1,10 +1,11 @@
-import { lstat } from 'node:fs/promises';
+import { lstat, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { HostId } from '../contracts';
 import { isObject } from '../core/documents';
 import { reject } from '../core/errors';
 import { relativePath, safePath } from '../core/paths';
+import { parseYaml } from '../core/yaml';
 import { literalWords, type HookInput } from './normalize';
 
 // Resolve only this release's bundled skill documentation, never another plugin/cache.
@@ -21,7 +22,8 @@ function reference(value: unknown): boolean {
 }
 function webRead(host: HostId, tool: string, args: Record<string, unknown>): boolean {
   if (host === 'claude' && tool === 'WebSearch') return keys(args, ['query', 'allowed_domains', 'blocked_domains']) && text(args.query) && ['allowed_domains', 'blocked_domains'].every(key => args[key] === undefined || Array.isArray(args[key]) && args[key].every(text));
-  if (host === 'claude' && tool === 'WebFetch') return keys(args, ['url', 'prompt']) && reference(args.url) && text(args.prompt);
+  // Claude Code 2.1.290+ paginates long pages with a character offset.
+  if (host === 'claude' && tool === 'WebFetch') return keys(args, ['url', 'prompt', 'offset']) && reference(args.url) && text(args.prompt) && (args.offset === undefined || number(args.offset));
   // `webrun` is the actual Codex Desktop PreToolUse name, not the orchestration alias.
   if (host !== 'codex' || tool !== 'webrun' || !keys(args, ['search_query', 'open', 'find', 'click', 'response_length'])) return false;
   if (args.response_length !== undefined && !['short', 'medium', 'long'].includes(args.response_length as string)) return false;
@@ -61,6 +63,21 @@ async function localRead(root: string, cwd: string, aliasCwd: string, value: unk
 /** Narrow pass-through; never returns a host permission override or grants implementation authority. */
 export async function isReadOnlyTool(root: string, host: HostId, input: HookInput, cwd: string): Promise<boolean> {
   const tool = input.tool_name!; const args = input.tool_input!;
+  // Load only these native definitions; their later calls still get their own gates.
+  if (host === 'claude' && tool === 'ToolSearch') return keys(args, ['query', 'max_results']) &&
+    ['select:Read', 'select:WebFetch', 'select:WebSearch', 'select:AskUserQuestion', 'select:Skill'].includes(args.query as string) &&
+    (args.max_results === undefined || number(args.max_results) && (args.max_results as number) > 0);
+  if (host === 'claude' && tool === 'Skill') {
+    if (!keys(args, ['skill', 'args']) || !['byeori:init', 'byeori:start', 'byeori:change', 'byeori:review'].includes(args.skill as string) || args.args !== undefined && typeof args.args !== 'string') return false;
+    const name = (args.skill as string).slice('byeori:'.length); const packaged = import.meta.url.endsWith('.mjs');
+    const file = path.join(bundledReferenceRoot(), packaged ? name + '/SKILL.md' : name + '.md');
+    await localRead(root, cwd, input.cwd, file);
+    const raw = await readFile(file, 'utf8'); const header = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(raw);
+    if (!header || raw.includes('!`')) return false;
+    const fields = parseYaml(header[1]);
+    // No allowed-tools, hooks, dynamic shell context, or forked execution grants.
+    return keys(fields, ['name', 'description']) && fields.name === name && text(fields.description);
+  }
   if (webRead(host, tool, args)) return true;
   if (tool === 'Read') { await localRead(root, cwd, input.cwd, args.file_path); return true; }
   if (!['Bash', 'exec_command'].includes(tool) || Object.hasOwn(args, 'workdir') || Object.hasOwn(args, 'cwd') || typeof args.command !== 'string') return false;

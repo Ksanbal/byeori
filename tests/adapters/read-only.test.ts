@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile, spawn } from 'node:child_process';
-import { mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -34,6 +34,7 @@ test('exact research tool names and known read shapes, never arbitrary MCP or mi
     ['codex', 'webrun', { find: [{ ref_id: 'turn0search0', pattern: 'refund' }], click: [{ ref_id: 'turn0search0', id: 2 }] }],
     ['claude', 'WebSearch', { query: 'public refund policy', allowed_domains: ['example.org'] }],
     ['claude', 'WebFetch', { url: 'https://example.org/policy', prompt: 'Summarize the public policy' }],
+    ['claude', 'WebFetch', { url: 'https://example.org/policy', prompt: 'Continue reading', offset: 100000 }],
   ];
   for (const [host, tool, args] of allowed) assert.equal(await isReadOnlyTool(root, host, parseHookInput(event(root, tool, args)), root), true, tool);
   for (const [tool, args] of [
@@ -42,6 +43,27 @@ test('exact research tool names and known read shapes, never arbitrary MCP or mi
     ['webrun', { search_query: [] }], ['webrun', { find: [{ ref_id: 'turn0search0' }] }], ['webrun', { click: [{ ref_id: 'turn0search0', id: '2' }] }],
     ['mcp__arbitrary__search', search], ['functions.exec', { code: 'anything' }], ['WebSearch', { query: 'not a Codex native name' }],
   ] as [string, Record<string, unknown>][]) assert.equal(await isReadOnlyTool(root, 'codex', parseHookInput(event(root, tool, args)), root), false, tool);
+}));
+
+test('Claude WebFetch pagination defers to host permissions; invalid offsets and extra actions stay gated', () => fixture(async root => {
+  const args = { url: 'https://example.org/policy', prompt: 'Continue reading the public page' };
+  const before = await readHost(root, 'claude');
+  await withWriteLock(root, 'existing draft writer during research', async () => {
+    for (const offset of [0, 100000, Number.MAX_SAFE_INTEGER]) {
+      assert.deepEqual(await handleHook('claude', event(root, 'WebFetch', { ...args, offset })), { exit: 0, stdout: '', stderr: '' });
+    }
+  });
+  assert.deepEqual(await readHost(root, 'claude'), before);
+  await assert.rejects(readFile(path.join(root, 'planning/hosts/claude.yaml')), { code: 'ENOENT' });
+  for (const offset of [-1, 0.5, '100000', null]) {
+    denied(await handleHook('claude', event(root, 'WebFetch', { ...args, offset })), 'SCOPE_DENIED');
+  }
+  // The shared input parser rejects lossy integers before tool classification.
+  denied(await handleHook('claude', event(root, 'WebFetch', { ...args, offset: Number.MAX_SAFE_INTEGER + 1 })), 'VALIDATION_FAILED');
+  for (const extra of [{ method: 'POST' }, { content: 'write' }, { execute: 'touch src/change.ts' }]) {
+    denied(await handleHook('claude', event(root, 'WebFetch', { ...args, offset: 100000, ...extra })), 'SCOPE_DENIED');
+  }
+  denied(await handleHook('codex', event(root, 'WebFetch', { ...args, offset: 100000 })), 'SCOPE_DENIED');
 }));
 
 test('parallel genuine read classifications do not require a writer lock or update activation records', () => fixture(async root => {
@@ -60,6 +82,29 @@ test('parallel genuine read classifications do not require a writer lock or upda
   assert.deepEqual(await readHost(root, 'codex'), before);
   assert.deepEqual(await readFile(path.join(root, 'planning/config.yaml')), config);
   await assert.rejects(readFile(path.join(root, 'planning/hosts/codex.yaml')), { code: 'ENOENT' });
+}));
+
+test('Claude native discovery and only this release\'s inert Byeori skills pass without authorization or locks', () => fixture(async root => {
+  const before = await readHost(root, 'claude');
+  await withWriteLock(root, 'existing draft writer during discovery', async () => {
+    for (const query of ['select:Read', 'select:WebFetch', 'select:WebSearch', 'select:AskUserQuestion', 'select:Skill']) {
+      assert.deepEqual(await handleHook('claude', event(root, 'ToolSearch', { query, max_results: 1 })), { exit: 0, stdout: '', stderr: '' });
+    }
+    for (const skill of ['byeori:init', 'byeori:start', 'byeori:change', 'byeori:review']) {
+      assert.equal(await packagedHook('claude', event(root, 'Skill', { skill, args: 'Synthetic planning request, no approval' })), '');
+    }
+  });
+  assert.deepEqual(await readHost(root, 'claude'), before);
+  await assert.rejects(readFile(path.join(root, 'planning/hosts/claude.yaml')), { code: 'ENOENT' });
+  for (const args of [{ query: 'find writing tools' }, { query: 'select:Write' }, { query: 'select:mcp__arbitrary__read' }, { query: 'select:WebFetch', max_results: 0 }, { query: 'select:WebFetch', max_results: '1' }, { query: 'select:WebFetch', execute: 'anything' }]) {
+    denied(await handleHook('claude', event(root, 'ToolSearch', args)), 'SCOPE_DENIED');
+  }
+  for (const args of [{ skill: 'start' }, { skill: 'another:start' }, { skill: 'byeori:approve' }, { skill: 'byeori:start', args: {} }, { skill: 'byeori:start', allow: true }]) {
+    denied(await handleHook('claude', event(root, 'Skill', args)), 'SCOPE_DENIED');
+  }
+  for (const tool of ['Skill', 'ToolSearch', 'mcp__arbitrary__Skill']) {
+    denied(await handleHook('codex', event(root, tool, { skill: 'byeori:start', query: 'select:WebFetch' })), 'SCOPE_DENIED');
+  }
 }));
 
 test('document reading excludes secrets, external files, symlinks, options and executable shell syntax', () => fixture(async root => {
@@ -87,9 +132,9 @@ test('draft writes remain pre-review; implementation, approved source and shell 
   assert.equal((await readHost(root, 'codex')).mode.type, 'enforced');
 }));
 
-async function packagedHook(host: HostId, raw: string): Promise<string> {
+async function packagedHook(host: HostId, raw: string, plugin = path.join(repository, `plugins/byeori-${host}`)): Promise<string> {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [path.join(repository, `plugins/byeori-${host}/runtime/hook.mjs`), host]); let stdout = '', stderr = '';
+    const child = spawn(process.execPath, [path.join(plugin, 'runtime/hook.mjs'), host]); let stdout = '', stderr = '';
     child.stdout.on('data', chunk => stdout += chunk); child.stderr.on('data', chunk => stderr += chunk); child.once('error', reject);
     child.once('close', code => code === 0 ? resolve(stdout) : reject(new Error(stderr))); child.stdin.end(raw);
   });
@@ -99,10 +144,32 @@ test('both regenerated hook bundles read their own skill references and research
     const reference = path.join(repository, `plugins/byeori-${host}/skills/${host === 'claude' ? 'start' : 'byeori-start'}/references/commands.md`);
     assert.equal(await packagedHook(host, event(root, 'Bash', { command: `cat "${reference}"` })), '');
     assert.equal(await packagedHook(host, event(root, host === 'codex' ? 'webrun' : 'WebSearch', host === 'codex' ? search : { query: 'public policy' })), '');
+    if (host === 'claude') {
+      assert.equal(await packagedHook(host, event(root, 'WebFetch', { url: 'https://example.org/policy', prompt: 'Continue reading', offset: 100000 })), '');
+      assert.match(await packagedHook(host, event(root, 'WebFetch', { url: 'https://example.org/policy', prompt: 'Continue reading', offset: -1 })), /SCOPE_DENIED/);
+      assert.equal(await packagedHook(host, event(root, 'ToolSearch', { query: 'select:WebFetch', max_results: 1 })), '');
+      assert.equal(await packagedHook(host, event(root, 'Skill', { skill: 'byeori:start', args: 'tiny integer counter' })), '');
+    }
     const other = path.join(repository, `plugins/byeori-${host === 'claude' ? 'codex' : 'claude'}/skills/${host === 'claude' ? 'byeori-start' : 'start'}/SKILL.md`);
     assert.match(await packagedHook(host, event(root, 'Bash', { command: `cat "${other}"` })), /PATH_DENIED/);
     assert.equal((await readHost(root, host)).active, false);
   }
+}));
+
+test('bundled Skill loading rejects permission grants, hooks, forks and dynamic shell context', () => fixture(async root => {
+  const plugin = await mkdtemp(path.join(os.tmpdir(), 'byeori skill metadata '));
+  try {
+    await cp(path.join(repository, 'plugins/byeori-claude'), plugin, { recursive: true });
+    const file = path.join(plugin, 'skills/start/SKILL.md'); const raw = await readFile(file, 'utf8');
+    const input = event(root, 'Skill', { skill: 'byeori:start' });
+    assert.equal(await packagedHook('claude', input, plugin), '');
+    for (const field of ['allowed-tools: Write', 'hooks: {}', 'context: fork']) {
+      await writeFile(file, raw.replace('name: "start"', 'name: "start"\n' + field));
+      assert.match(await packagedHook('claude', input, plugin), /SCOPE_DENIED/);
+    }
+    await writeFile(file, raw + '\n!`echo synthetic`\n');
+    assert.match(await packagedHook('claude', input, plugin), /SCOPE_DENIED/);
+  } finally { await rm(plugin, { force: true, recursive: true }); }
 }));
 
 const execute = promisify(execFile);

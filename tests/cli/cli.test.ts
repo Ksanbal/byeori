@@ -7,11 +7,10 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import test from 'node:test';
 import { stringify } from 'yaml';
-import type { ChangeRecord, ContinuityStatus, DoctorResult, Result, ReviewResults, ReviewRound, StudioRuntime } from '../../src/contracts';
+import type { ChangeRecord, ContinuityStatus, DoctorResult, Result, ReviewResults, ReviewRound } from '../../src/contracts';
 import { createHumanReview } from '../../src/core/services';
 import { roundBinding } from '../../src/core/review';
 import { parseYaml } from '../../src/core/yaml';
-import { stopOwnedStudio } from '../../src/server';
 import { execute } from '../../src/cli/main';
 const run = promisify(execFile); const entry = fileURLToPath(new URL('../../src/cli/main.ts', import.meta.url));
 async function cli<T>(root: string, command: string, flags: string[] = [], expected = 0) {
@@ -93,17 +92,4 @@ test('stage readiness and real child review respond preserve human decisions', a
     const result = (await cli<ReviewResults>(root, 'review results', input(frozen))).data!; assert.equal(result.accepted_submission!.submission.items[0].decision, 'request_changes'); await cli(root, 'apply', input(frozen), 3);
     assert.equal(bind.project_id, round.manifest.project_id);
   } finally { await rm(root, { recursive: true, force: true }); }
-});
-test('real detached CLI Studio child readiness/idempotence, credential isolation, stale/unrelated identity and owned stop', async () => {
-  const root = await fixture(); const assets = await mkdtemp(path.join(os.tmpdir(), 'byeori CLI assets ')); let original: string | null = null;
-  try {
-    await writeFile(path.join(assets, 'index.html'), '<!doctype html><html><body>CLI synthetic assets</body></html>');
-    const started = await cli<StudioRuntime>(root, 'studio', ['--action', 'start', '--assets', assets]); assert.equal(started.data!.state, 'running'); const record = path.join(root, 'planning/.runtime/studio.yaml'); original = await readFile(record, 'utf8'); const runtime = parseYaml(original) as unknown as { management_secret: string; owner: { process: { start_identity: string } } }; assert.ok(!started.stdout.includes(runtime.management_secret)); assert.equal(new URL(started.data!.url!).hostname, '127.0.0.1');
-    assert.deepEqual((await cli(root, 'studio', ['--action', 'start', '--assets', assets])).data, started.data); assert.deepEqual((await cli(root, 'studio', ['--action', 'status'])).data, started.data);
-    await rm(path.join(root, '.byeori'), { recursive: true, force: true }); assert.equal((await cli<StudioRuntime>(root, 'studio', ['--action', 'status'])).data!.state, 'running');
-    runtime.owner.process.start_identity = 'unrelated-start'; await writeFile(record, stringify(runtime)); await cli(root, 'studio', ['--action', 'status'], 5); await cli(root, 'studio', ['--action', 'stop'], 5); assert.match(await readFile(record, 'utf8'), /unrelated-start/); await writeFile(record, original);
-    await cli(root, 'studio', ['--action', 'stop']); assert.equal((await cli<StudioRuntime>(root, 'studio', ['--action', 'status'])).data!.state, 'stopped');
-    await new Promise(resolve => setTimeout(resolve, 150)); await writeFile(record, original, { mode: 0o600 }); assert.equal((await cli<StudioRuntime>(root, 'studio', ['--action', 'status'])).data!.state, 'stopped'); await cli(root, 'studio', ['--action', 'start', '--assets', assets], 4); await cli(root, 'studio', ['--action', 'stop']); original = null;
-    await cli(root, 'studio', ['--action', 'start', '--assets', path.join(assets, 'missing')], 1); await cli(root, 'studio', ['--action', 'status', '--assets', assets], 2);
-  } finally { if (original) { await writeFile(path.join(root, 'planning/.runtime/studio.yaml'), original, { mode: 0o600 }); await stopOwnedStudio(root); } await rm(root, { recursive: true, force: true }); await rm(assets, { recursive: true, force: true }); }
 });

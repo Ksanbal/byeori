@@ -97,7 +97,7 @@ export async function readReceipt(root: string, id: string): Promise<SubmittedRe
   const raw = await optionalText(root, 'planning/reviews/submissions/' + recordId(id) + '.yaml'); if (raw === null) return null;
   const value = await readRecord<SubmittedReview>(root, 'planning/reviews/submissions/' + id + '.yaml');
   exactRecord(value, ['submission', 'payload_hash', 'submitted_at', 'provenance'], 'submission receipt'); validateSubmission(value.submission); stringValue(value.submitted_at);
-  if (value.submission.submission_id !== id || value.provenance !== 'studio_human_submit' || value.payload_hash !== semanticHash(value.submission) || value.submission.expected_feedback_version !== semanticHash(feedbackBody(value.submission))) reject('VALIDATION_FAILED', 'Invalid durable receipt provenance/payload/saved revision.');
+  if (value.submission.submission_id !== id || !['studio_human_submit', 'terminal_human_submit'].includes(value.provenance) || value.payload_hash !== semanticHash(value.submission) || value.submission.expected_feedback_version !== semanticHash(feedbackBody(value.submission))) reject('VALIDATION_FAILED', 'Invalid durable receipt provenance/payload/saved revision.');
   return value as unknown as SubmittedReview;
 }
 export async function acceptedReceipt(root: string, round: ReviewRound): Promise<SubmittedReview | null> {
@@ -252,8 +252,8 @@ export async function submitReview(root: string, input: ReviewSubmission, hooks:
     await freshRound(root, input); validateFeedback(input, round, await roundDocuments(root, round, 'before'), await roundDocuments(root, round, 'after'));
     const saved = await readFeedbackDraft(root, round);
     if (!saved || saved.version !== input.expected_feedback_version || !same(feedbackBody(saved), feedbackBody(input))) reject('CONFLICT', 'Submit requires exactly the current durably saved feedback.');
-    if (input.implementation_authorization.allowed && !approval(round, { submission: input, payload_hash: semanticHash(input), submitted_at: '', provenance: 'studio_human_submit' }, await roundDocuments(root, round, 'after')).implementation_allowed) reject('REVIEW_REQUIRED', 'Implementation permission requires complete approval and stage readiness.');
-    const receipt: SubmittedReview = { submission: input, payload_hash: semanticHash(input), submitted_at: new Date().toISOString(), provenance: 'studio_human_submit' };
+    if (input.implementation_authorization.allowed && !approval(round, { submission: input, payload_hash: semanticHash(input), submitted_at: '', provenance: 'terminal_human_submit' }, await roundDocuments(root, round, 'after')).implementation_allowed) reject('REVIEW_REQUIRED', 'Implementation permission requires complete approval and stage readiness.');
+    const receipt: SubmittedReview = { submission: input, payload_hash: semanticHash(input), submitted_at: new Date().toISOString(), provenance: 'terminal_human_submit' };
     await putRecord(writer, 'planning/reviews/submissions/' + input.submission_id + '.yaml', receipt);
     return { submission_id: input.submission_id, payload_hash: receipt.payload_hash, submitted_at: receipt.submitted_at, replayed: false };
   }, hooks);

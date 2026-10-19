@@ -1,6 +1,6 @@
 # Ask, wait, and resume an interview
 
-Use this protocol for every missing user decision in start/change, clarification of review feedback, and planning resumed after init. Topic guides choose what to ask; this protocol chooses how to ask and when to continue. Questions collect planning input, never Studio approval or implementation permission. “AskTool” is a user-facing shorthand, not a callable API.
+Use this protocol for every missing user decision in start/change, clarification of review feedback, and planning resumed after init. Topic guides choose what to ask; this protocol chooses how to ask and when to continue. Questions collect planning input, never human terminal review approval or implementation permission. “AskTool” is a user-facing shorthand, not a callable API.
 
 ## 1. Recover context and choose the next question
 
@@ -45,7 +45,7 @@ On explicit pause, stop, cancellation or a dismissed/cancelled question, preserv
 
 After an explicit answer, summarize its necessary nonsecret meaning in workflow.facts with its question ID, remove only that answered entry from workflow.open_questions, preserve assumptions and unrelated fields, and update focus/next_action using fresh CAS. If a write conflicts, re-read and merge instead of overwriting another answer. If writes are prohibited, retain the answer in the conversation and disclose that persistence is pending. Never fabricate facts from sample payloads, defaults or silence.
 
-Only then ask the next relevant question or draft the confirmed planning with change put and lint. Keep unresolved blocking questions visible in the affected document's open_questions as well as the workflow; do not prepare review until they are resolved. Interview answers, including “yes,” do not approve a frozen review. Human review remains an explicit Studio submission followed by durable status/results readback; implementation still requires the existing authorization and gate checks.
+Only then ask the next relevant question or draft the confirmed planning with change put and lint. Keep unresolved blocking questions visible in the affected document's open_questions as well as the workflow; do not prepare review until they are resolved. Interview answers, including “yes,” do not approve a frozen review. Human review remains an explicit human terminal review submission followed by durable status/results readback; implementation still requires the existing authorization and gate checks.
 
 ## Host contract evidence
 

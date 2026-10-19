@@ -18,7 +18,7 @@ export async function verifyRelease(directory = root) {
   for (const name of ['LICENSE', 'THIRD_PARTY_NOTICES']) managedPaths.push(name);
   assert.deepEqual(managedPaths.sort(), expectedPaths, 'Unexpected file outside catalog/payload allowlist');
   assert.deepEqual(await hashes(path.join(directory, payloads[0], 'runtime')), await hashes(path.join(directory, payloads[1], 'runtime')), 'Host runtime bytes diverge');
-  const forbidden = /(?:^|\/)(?:\.delivery|\.inputs|node_modules|planning|\.env|\.DS_Store)(?:\/|$)|\.map$|(?:token|cookie|profile|input-pack)\.(?:json|zip)$/i;
+  const forbidden = /(?:^|\/)(?:studio|server)(?:\/|$)|(?:^|\/)worker\.mjs$|\.(?:html|css)$|(?:^|\/)(?:\.delivery|\.inputs|node_modules|planning|\.env|\.DS_Store)(?:\/|$)|\.map$|(?:token|cookie|profile|input-pack)\.(?:json|zip)$/i;
   for (const file of Object.keys(actual)) {
     assert.ok(!forbidden.test(file), 'Private/unexpected path: ' + file);
     const data = await readFile(path.join(directory, file));
@@ -79,7 +79,7 @@ if (process.argv.includes('--archives')) {
     const cli = path.join(directory, 'package/runtime/cli.mjs');
     const invoke = args => { const start = new Date().toISOString(); const argv = [cli, ...args, '--root', project, '--json']; const output = execFileSync(process.execPath, argv, { cwd: project, env: { ...process.env, NODE_PATH: '', NODE_OPTIONS: '' }, encoding: 'utf8' }); console.log(JSON.stringify({ command: process.execPath, args: argv, cwd: project, start, end: new Date().toISOString(), exit: 0 })); const result = JSON.parse(output); assert.ok(result.ok, output); assert.equal(result.meta.runtime_version, metadata.version); return result.data; };
     invoke(['--help']); invoke(['init']); assert.ok(invoke(['doctor']).sqlite.fts5_probed); invoke(['search', '--query', 'absent-in-clean-source']);
-    let running = false; try { const started = invoke(['studio', '--action', 'start']); running = true; assert.equal(started.state, 'running'); assert.ok(started.url.startsWith('http://127.0.0.1:')); assert.equal(invoke(['studio', '--action', 'status']).runtime_id, started.runtime_id); } finally { if (running) invoke(['studio', '--action', 'stop']); }
+    assert.match(execFileSync(process.execPath, [path.join(directory, 'package/runtime/review.mjs'), '--help'], {encoding: 'utf8'}), /human terminal review/);
     console.log(JSON.stringify({ tarball_clean_runtime_executed: true, registry_dependencies: false, native_claim: false }));
   } finally { await rm(directory, { recursive: true, force: true }); }
 }

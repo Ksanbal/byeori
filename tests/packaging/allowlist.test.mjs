@@ -15,7 +15,7 @@ test('public payload verification rejects unexpected root catalog/plugin files',
 }));
 test('public payload verification rejects absent assets and changed runtime bytes', () => fixture(async directory => {
   await writeFile(path.join(directory, 'plugins/byeori-codex/runtime/cli.mjs'), '// synthetic altered bytes'); await assert.rejects(verifyRelease(directory), /Unexpected\/missing\/changed/);
-  await cp(path.join(root, 'plugins/byeori-codex/runtime/cli.mjs'), path.join(directory, 'plugins/byeori-codex/runtime/cli.mjs')); await rm(path.join(directory, 'plugins/byeori-claude/runtime/studio/index.html')); await assert.rejects(verifyRelease(directory), /Unexpected\/missing\/changed/);
+  await cp(path.join(root, 'plugins/byeori-codex/runtime/cli.mjs'), path.join(directory, 'plugins/byeori-codex/runtime/cli.mjs')); await rm(path.join(directory, 'plugins/byeori-claude/runtime/review.mjs')); await assert.rejects(verifyRelease(directory), /Unexpected\/missing\/changed/);
 }));
 
 test('Codex Legacy hooks manifest is selected without a competing portable root', () => fixture(async directory => {
@@ -32,4 +32,15 @@ test('Codex Legacy hooks manifest is selected without a competing portable root'
   const release = JSON.parse(await readFile(releasePath, 'utf8')); release.files['plugins/byeori-codex/plugin.json'] = digest(competing);
   await writeFile(releasePath, JSON.stringify(release));
   await assert.rejects(verifyRelease(directory), /shadow Legacy hook discovery/);
+}));
+
+test('a self-consistent manifest cannot reintroduce a web runtime', () => fixture(async directory => {
+  const source = 'export const removedWebWorker = true;\n';
+  const manifestPath = path.join(directory, 'plugins/release-manifest.json'); const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  for (const host of ['claude', 'codex']) {
+    const relative = `plugins/byeori-${host}/runtime/worker.mjs`;
+    await writeFile(path.join(directory, relative), source); manifest.files[relative] = digest(source);
+  }
+  await writeFile(manifestPath, JSON.stringify(manifest));
+  await assert.rejects(verifyRelease(directory), /Private\/unexpected path/);
 }));

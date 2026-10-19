@@ -1,4 +1,4 @@
-import type { ContinuityStatus, DocumentView, GateRequest, GateResult, GetRequest, HistoryEntry, HistoryRequest, HistoryResult, HostCapability, HostId, ImplementationRecord, ReviewRound, StudioState } from '../contracts';
+import type { ContinuityStatus, DocumentView, GateRequest, GateResult, GetRequest, HistoryEntry, HistoryRequest, HistoryResult, HostCapability, HostId, ImplementationRecord, ReviewRound } from '../contracts';
 import { readTransaction } from './apply';
 import { isObject, type ParsedDocument, validateSource } from './documents';
 import { CoreError, reject } from './errors';
@@ -6,7 +6,7 @@ import { readOwnership, withWriteLock } from './ownership';
 import { listFiles, readText, relativePath, safePath } from './paths';
 import { binding, exactRecord, putRecord, readRecord, recordFiles, same, stringValue } from './record-io';
 import { acceptedReceipt, activeChanges, approval, changeState, readRound, responses, roundBinding, roundDocuments, roundNumbers, sourceHead, type SourceHead } from './review';
-import { changeRoot, checkBinding, currentBinding, loadChange, loadRawSource, optionalText, readProjectConfig, readWorkflow, workspaceIdentity } from './workspace';
+import { changeRoot, checkBinding, currentBinding, loadChange, loadRawSource, optionalText, readWorkflow } from './workspace';
 import { parseYaml, semanticHash } from './yaml';
 
 async function completedHead(root: string): Promise<SourceHead> {
@@ -126,10 +126,4 @@ export async function history(root: string, input: HistoryRequest = {}): Promise
     }
     const offset = Number(input.cursor ?? '0'); if (!Number.isSafeInteger(offset)) reject('VALIDATION_FAILED', 'Invalid cursor.'); return { entries: entries.slice(offset, offset + limit), next_cursor: offset + limit < entries.length ? String(offset + limit) : null };
   });
-}
-export async function studioState(root: string): Promise<StudioState> {
-  const state = await status(root); const config = await readProjectConfig(root); const identity = await workspaceIdentity(root); let documents: StudioState['documents'] = []; let review: StudioState['review'] = null;
-  if (state.source_integrity.state === 'valid') documents = (await readApprovedSource(root)).map(document => ({ id: document.id, kind: document.kind, title: document.projection.title, path: document.path }));
-  if (state.active_change && state.current_round && state.manifest_hash) { const { reviewResults } = await import('./review'); review = await reviewResults(root, { ...await currentBinding(root), change_id: state.active_change.change_id, round: state.current_round, manifest_hash: state.manifest_hash }); }
-  return { project: { project_id: config.project_id, name: config.name }, branch: identity.git?.branch_ref ?? null, status: state, documents, review };
 }

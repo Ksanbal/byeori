@@ -58,10 +58,10 @@ export interface ReviewBinding extends WorkspaceBinding { change_id: RecordId; r
 export interface ReviewSubmission extends ReviewBinding, ReviewFeedback {
   schema_version: 1; submission_id: RecordId; expected_feedback_version: Hash; final_confirmation: true;
 }
-/** Produced by Core only after the authenticated Studio explicit-submit route succeeds. */
+/** Produced by Core after explicit human terminal submission; legacy web provenance remains readable. */
 export interface SubmittedReview {
   submission: ReviewSubmission; payload_hash: Hash; submitted_at: Timestamp;
-  provenance: 'studio_human_submit';
+  provenance: 'terminal_human_submit' | 'studio_human_submit';
 }
 /** Autosave is durable but does not participate in approval derivation. */
 export interface ReviewDraft extends ReviewBinding, ReviewFeedback { schema_version: 1; version: Hash; saved_at: Timestamp }

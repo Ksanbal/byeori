@@ -18,7 +18,6 @@ jobs:
           version: 12.10.1
       - run: pnpm install --frozen-lockfile
       - run: git diff --exit-code -- pnpm-lock.yaml
-      - run: pnpm exec playwright install --with-deps chrome
       - run: pnpm check
       - run: pnpm pack:release
       - run: pnpm verify:release -- --archives
