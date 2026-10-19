@@ -16,19 +16,29 @@
     "build:release": "node --import tsx scripts/build-release.mjs",
     "pack:release": "node scripts/pack-release.mjs",
     "verify:release": "node --import tsx scripts/verify-release.mjs",
-    "test:package": "node --import tsx --test 'tests/packaging/*.test.*'"
+    "test:package": "node --import tsx --test 'tests/packaging/*.test.*'",
+    "build:viewer": "node scripts/build-viewer.mjs",
+    "viewer": "pnpm build:viewer && node --import tsx src/viewer/entry.ts"
   },
   "dependencies": {
+    "@cloudflare/kumo": "2.14.0",
+    "@phosphor-icons/react": "2.1.10",
     "ajv": "8.20.0",
     "ajv-formats": "3.0.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
     "yaml": "2.9.1"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@types/jsdom": "27.0.0",
     "@types/node": "24.19.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
     "esbuild": "0.28.2",
     "eslint": "10.12.0",
     "globals": "17.13.0",
+    "jsdom": "27.4.0",
     "tsx": "4.23.15",
     "typescript": "6.0.3",
     "typescript-eslint": "8.71.1"

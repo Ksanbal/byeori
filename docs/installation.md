@@ -26,6 +26,16 @@ node "$BYEORI_CLI" init --root "$PROJECT" --json
 
 Check the result before continuing. The runtime reports Node, SQLite/FTS5, schema and write-access observations. Host `configured`, `trusted`, `probed` and `active` states are distinct; the CLI being available does not mean a native hook is active.
 
+## Optional read-only document viewer
+
+The built viewer is a separate Node entrypoint:
+
+```sh
+node /path/to/byeori-plugin/runtime/viewer.mjs --root "$PROJECT" --port 4317
+```
+
+Open the printed loopback URL. Browser assets are bundled locally; no consumer package manager, CDN or build is needed. The viewer reads planning and provides a 2D relationship map, but it cannot edit, approve, submit, apply or grant implementation permission. Use the protected terminal reviewer for human decisions. See [document viewer](document-viewer.md) for keyboard navigation, provenance and the Notion migration backlog.
+
 ## Host installation
 
 The root catalog is named `byeori-plugins`; its plugin entry is `byeori`. Use these marketplace commands to install the published `v0.1.0-rc.4` release. The earlier rc.1 marketplace installation was verified; current release evidence and native-host limits are separated in [Verification](verification.md).

@@ -1,7 +1,8 @@
 # Architecture overview
 
-Byeori has a shared local Core, an agent CLI, a human terminal reviewer, and Claude/Codex hooks. Both plugins carry identical cli.mjs, review.mjs and hook.mjs runtimes plus offline schemas. There is no listener, worker daemon, HTTP API or browser UI.
+Byeori has a shared local Core, an agent CLI, a human terminal reviewer, a separate read-only document viewer, and Claude/Codex hooks. Both plugins carry identical cli.mjs, review.mjs, hook.mjs and viewer.mjs runtimes, local viewer assets and offline schemas. Only the optional viewer starts a loopback HTTP listener; no HTTP review or mutation transport is available.
 
+- Read-only viewer: reads bounded planning records without project writes; serves a Kumo document reader and 2D relationship map with local bundled assets. Source visibility does not grant approval. See [viewer boundaries](document-viewer.md).
 - Agent CLI: typed draft/workflow operations with binding/CAS, freeze, search, history, results, apply and gates. It cannot submit human approval.
 - Human terminal: displays immutable before/after documents, purpose, deletions and exact implementation scope. Direct TTY and process-chain checks precede every feedback write. Explicit final submission is separate from saved judgments.
 - Core: validates documents, scope, identity, fresh review, semantic hashes, final receipts, source chain and journaled apply/recovery. Terminal and agent transports share these services.

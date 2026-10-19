@@ -19,10 +19,19 @@ export async function verifyRelease(directory = root) {
   assert.deepEqual(managedPaths.sort(), expectedPaths, 'Unexpected file outside catalog/payload allowlist');
   assert.deepEqual(await hashes(path.join(directory, payloads[0], 'runtime')), await hashes(path.join(directory, payloads[1], 'runtime')), 'Host runtime bytes diverge');
   const forbidden = /(?:^|\/)(?:studio|server)(?:\/|$)|(?:^|\/)worker\.mjs$|\.(?:html|css)$|(?:^|\/)(?:\.delivery|\.inputs|node_modules|planning|\.env|\.DS_Store)(?:\/|$)|\.map$|(?:token|cookie|profile|input-pack)\.(?:json|zip)$/i;
+  const viewerAssets = new Set(payloads.flatMap(payload => ['index.html', 'app.js', 'app.css'].map(name => payload + '/runtime/viewer/' + name)));
+  for (const payload of payloads) {
+    for (const suffix of ['viewer.mjs', 'viewer/index.html', 'viewer/app.js', 'viewer/app.css']) {
+      assert.ok(Object.hasOwn(actual, payload + '/runtime/' + suffix), 'Missing read-only viewer asset: ' + suffix);
+    }
+  }
   for (const file of Object.keys(actual)) {
-    assert.ok(!forbidden.test(file), 'Private/unexpected path: ' + file);
+    // The read-only viewer has exactly three static assets. This exception cannot
+    // reintroduce Studio, review HTTP transports, or arbitrary web payloads.
+    assert.ok(!forbidden.test(file) || viewerAssets.has(file), 'Private/unexpected path: ' + file);
+    if (/\/runtime\/viewer\//.test(file)) assert.ok(viewerAssets.has(file), 'Unexpected viewer asset: ' + file);
     const data = await readFile(path.join(directory, file));
-    if (/\.(?:mjs|js|css|json|md)$/.test(file)) {
+    if (/\.(?:mjs|js|css|html|json|md)$/.test(file)) {
       const text = data.toString('utf8');
       assert.ok(!/(?:\/Users\/|\/home\/|\.delivery\/|\.inputs\/|sourceMappingURL=|BEGIN (?:RSA |OPENSSH )?PRIVATE KEY)/.test(text), 'Private/developer/source-map content: ' + file);
       assert.ok(!/\{\{[^}]+\}\}/.test(text), 'Unrendered slot: ' + file);
@@ -66,7 +75,7 @@ if (process.argv.includes('--archives')) {
     execFileSync('unzip', ['-q', path.join(destination, `byeori-${metadata.version}-plugins.zip`), '-d', directory]);
     await verifyRelease(directory);
     const listed = [...Object.keys(JSON.parse(await readFile(path.join(directory, 'plugins/release-manifest.json'))).files), 'plugins/release-manifest.json'].sort();
-    assert.deepEqual(await files(directory), listed, 'Unexpected archive member');
+    assert.deepEqual((await files(directory)).sort(), listed, 'Unexpected archive member');
     execFileSync('tar', ['-xzf', path.join(destination, `byeori-${metadata.version}.tgz`), '-C', directory]);
     const packedHashes = await hashes(path.join(directory, 'package')), stagedHashes = await hashes(path.join(root, 'artifacts/release-staging/cli-package'));
     assert.deepEqual(JSON.parse(await readFile(path.join(directory, 'package/package.json'))), JSON.parse(await readFile(path.join(root, 'artifacts/release-staging/cli-package/package.json'))), 'Packed manifest semantics changed');
@@ -80,6 +89,8 @@ if (process.argv.includes('--archives')) {
     const invoke = args => { const start = new Date().toISOString(); const argv = [cli, ...args, '--root', project, '--json']; const output = execFileSync(process.execPath, argv, { cwd: project, env: { ...process.env, NODE_PATH: '', NODE_OPTIONS: '' }, encoding: 'utf8' }); console.log(JSON.stringify({ command: process.execPath, args: argv, cwd: project, start, end: new Date().toISOString(), exit: 0 })); const result = JSON.parse(output); assert.ok(result.ok, output); assert.equal(result.meta.runtime_version, metadata.version); return result.data; };
     invoke(['--help']); invoke(['init']); assert.ok(invoke(['doctor']).sqlite.fts5_probed); invoke(['search', '--query', 'absent-in-clean-source']);
     assert.match(execFileSync(process.execPath, [path.join(directory, 'package/runtime/review.mjs'), '--help'], {encoding: 'utf8'}), /human terminal review/);
+    assert.equal(packed.bin['byeori-viewer'], 'runtime/viewer.mjs');
+    assert.match(execFileSync(process.execPath, [path.join(directory, 'package/runtime/viewer.mjs'), '--help'], {encoding: 'utf8'}), /read.only/i);
     console.log(JSON.stringify({ tarball_clean_runtime_executed: true, registry_dependencies: false, native_claim: false }));
   } finally { await rm(directory, { recursive: true, force: true }); }
 }

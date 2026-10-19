@@ -10,7 +10,11 @@ Byeori keeps product planning in reviewable files beside a project. Claude Code 
 4. **The person** runs `node <plugin>/runtime/review.mjs --root <project>` directly in their own supported terminal. Read the frozen before/after content, choose each judgment, explicitly choose `planning-only` or `allow-implementation`, and type the displayed final confirmation. No selection or empty response defaults to approval.
 5. Tell the assistant the review is submitted. It reads `review results` and `status`; valid planning can be applied, while every code operation still needs current host protection and exact frozen implementation authorization.
 
-The human reviewer cannot run through agent tools, pipes or arbitrary wrappers. It does not accept approval JSON or flags. See [terminal review](docs/terminal-review.md) for supported terminals, pause/resume, rejection and transport limits. There is no local web server, review website or browser dependency. External WebFetch/WebSearch research remains available under the host's own permissions.
+The human reviewer cannot run through agent tools, pipes or arbitrary wrappers. It does not accept approval JSON or flags. See [terminal review](docs/terminal-review.md) for supported terminals, pause/resume, rejection and transport limits. The optional [read-only document viewer](docs/document-viewer.md) serves planning locally in a browser; it cannot submit reviews or change project state. External WebFetch/WebSearch research remains available under the host's own permissions.
+
+## Read planning in the browser
+
+Run `node <plugin>/runtime/viewer.mjs --root <project> --port 4317`, then open its printed loopback URL. The Kumo-based reader includes document navigation and a 2D relationship view. Select current source or a saved change set to inspect generated drafts, including incomplete YAML. IA hierarchy and architecture connections are navigable in a pannable, zoomable 2D space. Provenance and recorded status stay visible; the viewer does not establish approval. All assets are local, and the packaged server needs only supported Node 24. Development: `pnpm viewer --root <project> --port 4317`. See [viewer usage and boundaries](docs/document-viewer.md), including the unimplemented Notion migration backlog.
 
 ## Data and protection
 
@@ -20,6 +24,6 @@ See [product model](docs/product-model.md), [architecture](docs/architecture-ove
 
 ## Development and delivery
 
-Requires supported Node 24 and pnpm 12.10.1. `pnpm check` builds deterministic CLI/reviewer/hook payloads, lints, typechecks, tests and verifies release contents. `pnpm pack:release` and `pnpm verify:release -- --archives` exercise clean consumer archives. Claude and Codex carry byte-identical runtime files with host-specific manifests and skills. No consumer dependency install or build is required.
+Requires supported Node 24 and pnpm 12.10.1. `pnpm check` builds deterministic CLI/reviewer/hook/read-only-viewer payloads, lints, typechecks, tests and verifies release contents. `pnpm pack:release` and `pnpm verify:release -- --archives` exercise clean consumer archives. Claude and Codex carry byte-identical runtime files with host-specific manifests and skills. No consumer dependency install or build is required.
 
 Version 0.1.0-rc.4 is an explicit prerelease of the terminal review replacement. Direct human-terminal acceptance and the complete native Claude Code/Codex flows remain unverified; see [verification](docs/verification.md) and [release notes](docs/releases/v0.1.0-rc.4.md). Automated checks do not establish native enforcement or grant implementation permission.

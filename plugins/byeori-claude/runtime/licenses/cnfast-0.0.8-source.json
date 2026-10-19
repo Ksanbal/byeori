@@ -1,0 +1,10 @@
+{
+  "package": "cnfast",
+  "version": "0.0.8",
+  "license": "MIT",
+  "source": "https://registry.npmjs.org/cnfast/-/cnfast-0.0.8.tgz",
+  "integrity": "sha512-EjXKMfGfdwtV4AcNSQ6AwQaVzpC1B7IxeiwA3FlhTXz+YFlMKVi4c1JX9tgD2QOlahQXjB8KUXrBaYG+3v871Q==",
+  "path": "package/LICENSE",
+  "sha256": "040de59a67c5f972b0e6deca1077d13238988de95a93850252d26f72f7e05062",
+  "reason": "Prebundled in Kumo 2.14.0 JavaScript chunks used by the viewer; original version identified from upstream source-region comments."
+}

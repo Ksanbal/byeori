@@ -1,0 +1,10 @@
+{
+  "package": "@floating-ui/dom",
+  "version": "1.8.0",
+  "license": "MIT",
+  "source": "https://registry.npmjs.org/@floating-ui/dom/-/dom-1.8.0.tgz",
+  "integrity": "sha512-yXSrzeHZBTZadLOlfyhCkJHNeLJnHRnRInwdZ40L7ZiaAtrBwoYlsDrX3v5zB1Utk7CLfzcOVnVVWoXEky7Ceg==",
+  "path": "package/LICENSE",
+  "sha256": "0e4c9a9b6c71019cbbea3bdc20b01223110a9035700f9c960c8fcbf78c2325ce",
+  "reason": "Prebundled in Kumo 2.14.0 JavaScript chunks used by the viewer; original version identified from upstream source-region comments."
+}

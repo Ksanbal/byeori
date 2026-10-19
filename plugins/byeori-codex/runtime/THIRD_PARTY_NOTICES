@@ -1,17 +1,53 @@
 Byeori third-party notices
 
-Bundled terminal runtime dependencies retain their original licenses.
+Bundled terminal runtime and read-only viewer dependencies retain their original licenses.
 
+@base-ui/react@1.8.0 — MIT
+  runtime/licenses/base-ui__react-1.8.0-LICENSE
+  runtime/licenses/base-ui__react-1.8.0-source.json
+@base-ui/utils@0.4.0 — MIT
+  runtime/licenses/base-ui__utils-0.4.0-LICENSE
+  runtime/licenses/base-ui__utils-0.4.0-source.json
+@cloudflare/kumo@2.14.0 — MIT
+  runtime/licenses/cloudflare__kumo-2.14.0-LICENSE
+@floating-ui/core@1.8.0 — MIT
+  runtime/licenses/floating-ui__core-1.8.0-LICENSE
+  runtime/licenses/floating-ui__core-1.8.0-source.json
+@floating-ui/dom@1.8.0 — MIT
+  runtime/licenses/floating-ui__dom-1.8.0-LICENSE
+  runtime/licenses/floating-ui__dom-1.8.0-source.json
+@floating-ui/react-dom@2.1.9 — MIT
+  runtime/licenses/floating-ui__react-dom-2.1.9-LICENSE
+  runtime/licenses/floating-ui__react-dom-2.1.9-source.json
+@floating-ui/utils@0.2.12 — MIT
+  runtime/licenses/floating-ui__utils-0.2.12-LICENSE
+  runtime/licenses/floating-ui__utils-0.2.12-source.json
+@phosphor-icons/react@2.1.10 — MIT
+  runtime/licenses/phosphor-icons__react-2.1.10-LICENSE
 ajv-formats@3.0.1 — MIT
   runtime/licenses/ajv-formats-3.0.1-LICENSE
 ajv@8.20.0 — MIT
   runtime/licenses/ajv-8.20.0-LICENSE
+cnfast@0.0.8 — MIT
+  runtime/licenses/cnfast-0.0.8-LICENSE
+  runtime/licenses/cnfast-0.0.8-source.json
 fast-deep-equal@3.1.3 — MIT
   runtime/licenses/fast-deep-equal-3.1.3-LICENSE
 fast-uri@3.1.8 — BSD-3-Clause
   runtime/licenses/fast-uri-3.1.8-LICENSE
 json-schema-traverse@1.0.0 — MIT
   runtime/licenses/json-schema-traverse-1.0.0-LICENSE
+react-dom@19.3.1 — MIT
+  runtime/licenses/react-dom-19.3.1-LICENSE
+react@19.3.1 — MIT
+  runtime/licenses/react-19.3.1-LICENSE
+scheduler@0.28.0 — MIT
+  runtime/licenses/scheduler-0.28.0-LICENSE
+tailwindcss@4.1.17 — MIT
+  runtime/licenses/tailwindcss-4.1.17-LICENSE
+  runtime/licenses/tailwindcss-4.1.17-source.json
+use-sync-external-store@1.7.0 — MIT
+  runtime/licenses/use-sync-external-store-1.7.0-LICENSE
 yaml@2.9.1 — ISC
   runtime/licenses/yaml-2.9.1-LICENSE
 

@@ -1,0 +1,10 @@
+{
+  "package": "@floating-ui/react-dom",
+  "version": "2.1.9",
+  "license": "MIT",
+  "source": "https://registry.npmjs.org/@floating-ui/react-dom/-/react-dom-2.1.9.tgz",
+  "integrity": "sha512-JDjEFGCpImxDCA7JJKviA0M9+RtmJdj0m/NVU5IMgBK+AmZouAQQ7/+2GLH0GXXY0YMw9oXPB8hKdbPYg5QLYg==",
+  "path": "package/LICENSE",
+  "sha256": "0e4c9a9b6c71019cbbea3bdc20b01223110a9035700f9c960c8fcbf78c2325ce",
+  "reason": "Prebundled in Kumo 2.14.0 JavaScript chunks used by the viewer; original version identified from upstream source-region comments."
+}

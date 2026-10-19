@@ -1,0 +1,10 @@
+{
+  "package": "@base-ui/react",
+  "version": "1.8.0",
+  "license": "MIT",
+  "source": "https://registry.npmjs.org/@base-ui/react/-/react-1.8.0.tgz",
+  "integrity": "sha512-P0/1sxo6SBVZOklKMIedvTWqw2s2IQzi9x5bIVsXu980cuSOD4NeuRSs+/L7LZQfDkZP/uRZyGPyfFl/B1oH+Q==",
+  "path": "package/LICENSE",
+  "sha256": "07fc1b39d69d14bc7d40482a628f47226258eb01265db68ae684944b916beb2a",
+  "reason": "Prebundled in Kumo 2.14.0 JavaScript chunks used by the viewer; original version identified from upstream source-region comments."
+}

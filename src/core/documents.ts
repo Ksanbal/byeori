@@ -114,13 +114,16 @@ function validateElements(document: PlanningObject, location: string): void {
   }
   if (document.kind === 'ia') {
     const parents = new Map(document.nodes.map(node => [node.id, node.parent_id]));
+    const complete = new Set<string>();
     for (const node of document.nodes) {
       const seen = new Set<string>();
       let current: string | null = node.id;
-      while (current !== null) {
+      // Each parent chain only needs validation once, regardless of source order.
+      while (current !== null && !complete.has(current)) {
         if (seen.has(current) || !parents.has(current)) reject('VALIDATION_FAILED', 'IA parent is missing or cyclic.', location, 'nodes');
         seen.add(current); current = parents.get(current)!;
       }
+      for (const id of seen) complete.add(id);
     }
   }
 }

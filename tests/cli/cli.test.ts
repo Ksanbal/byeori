@@ -69,7 +69,10 @@ test('real child change CRUD, supplied CAS, lint, review/apply, search/history/g
     const human = createHumanReview(root); const feedback = { ...frozen, items: round.manifest.items.map(item => ({ item_id: item.item_id, decision: 'approve' as const, comments: [] })), implementation_authorization: { allowed: true as const, scope_hash: round.manifest.scope_hash } }; const saved = await human.saveReviewDraft({ ...feedback, expected_version: null }); assert.ok(saved.ok); if (!saved.ok) return;
     const submitted = await human.submitReview({ ...feedback, schema_version: 1, submission_id: 'synthetic-cli-approval', expected_feedback_version: saved.data.version, final_confirmation: true }); assert.ok(submitted.ok);
     await cli(root, 'apply', input(frozen)); await cli(root, 'status'); await cli(root, 'lint');
-    const found = await cli<{ hits: { id: string; revision: unknown }[] }>(root, 'search', ['--query', '기획']); assert.equal(found.data!.hits[0].id, 'PRD-DEMO-001'); assert.match(found.stderr, /SQLite/); await cli(root, 'impact', ['--id', 'PRD-DEMO-001']);
+    const found = await cli<{ hits: { id: string; revision: unknown }[] }>(root, 'search', ['--query', '기획']); assert.equal(found.data!.hits[0].id, 'PRD-DEMO-001');
+    // Earlier supported Node 24 versions emit an experimental SQLite warning; 24.19.0 does not.
+    if (found.stderr) assert.match(found.stderr, /SQLite/);
+    await cli(root, 'impact', ['--id', 'PRD-DEMO-001']);
     await cli(root, 'get', ['--id', 'PRD-DEMO-001']); await cli(root, 'history', ['--id', 'PRD-DEMO-001']); await cli(root, 'lint', ['--scope', 'history:' + change.change_id + ':1']);
     const past = (await cli<{ hits: { revision: unknown }[] }>(root, 'search', ['--query', 'PRD-DEMO-001', '--scope', 'history:' + change.change_id])).data!; await cli(root, 'get', input({ object_id: 'PRD-DEMO-001', revision: past.hits[0].revision }));
     await rm(path.join(root, '.byeori'), { recursive: true }); await cli(root, 'index rebuild'); await cli(root, 'search', ['--query', '기획']);

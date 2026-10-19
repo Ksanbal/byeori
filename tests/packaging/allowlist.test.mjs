@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -34,7 +34,7 @@ test('Codex Legacy hooks manifest is selected without a competing portable root'
   await assert.rejects(verifyRelease(directory), /shadow Legacy hook discovery/);
 }));
 
-test('a self-consistent manifest cannot reintroduce a web runtime', () => fixture(async directory => {
+test('a self-consistent manifest cannot reintroduce the removed web review worker', () => fixture(async directory => {
   const source = 'export const removedWebWorker = true;\n';
   const manifestPath = path.join(directory, 'plugins/release-manifest.json'); const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
   for (const host of ['claude', 'codex']) {
@@ -43,4 +43,36 @@ test('a self-consistent manifest cannot reintroduce a web runtime', () => fixtur
   }
   await writeFile(manifestPath, JSON.stringify(manifest));
   await assert.rejects(verifyRelease(directory), /Private\/unexpected path/);
+}));
+
+
+test('only the explicitly packaged read-only viewer assets are allowed', () => fixture(async directory => {
+  await verifyRelease(directory);
+  const releasePath = path.join(directory, 'plugins/release-manifest.json');
+  const original = await readFile(releasePath, 'utf8');
+  for (const relative of ['viewer/approval.html', 'viewer/extra.js', 'review.html', 'review.css', 'studio/entry.mjs', 'server/index.mjs']) {
+    const manifest = JSON.parse(original);
+    const content = 'synthetic removed approval transport';
+    for (const host of ['claude', 'codex']) {
+      const file = `plugins/byeori-${host}/runtime/${relative}`;
+      await mkdir(path.dirname(path.join(directory, file)), { recursive: true });
+      await writeFile(path.join(directory, file), content);
+      manifest.files[file] = digest(content);
+    }
+    await writeFile(releasePath, JSON.stringify(manifest));
+    await assert.rejects(verifyRelease(directory), /Private\/unexpected path|Unexpected viewer asset/);
+    for (const host of ['claude', 'codex']) await rm(path.join(directory, `plugins/byeori-${host}/runtime/${relative}`));
+  }
+}));
+
+test('a self-consistent manifest cannot omit the read-only viewer assets', () => fixture(async directory => {
+  const releasePath = path.join(directory, 'plugins/release-manifest.json');
+  const manifest = JSON.parse(await readFile(releasePath, 'utf8'));
+  for (const host of ['claude', 'codex']) {
+    const file = `plugins/byeori-${host}/runtime/viewer/app.css`;
+    await rm(path.join(directory, file));
+    delete manifest.files[file];
+  }
+  await writeFile(releasePath, JSON.stringify(manifest));
+  await assert.rejects(verifyRelease(directory), /Missing read-only viewer asset/);
 }));
